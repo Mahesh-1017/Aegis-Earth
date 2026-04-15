@@ -30,7 +30,8 @@ API_TITLE = "AEGIS Triple-Modal Fusion API"
 API_VERSION = "2.0.0"
 
 # NASA API
-NASA_API_KEY = "QpCinFsJT2fYXQLkkrTNwCCsOlBgW1v66T1OqFqt"
+NASA_API_KEY = os.getenv(
+    "NASA_API_KEY", "QpCinFsJT2fYXQLkkrTNwCCsOlBgW1v66T1OqFqt")
 NASA_API_URL = "https://api.nasa.gov/neo/rest/v1/neo/browse"
 
 # Model parameters
