@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aegis Earth - Earth Monitoring</title>
+    <style>
+    /* Immediate background to prevent white flash */
+    html, body {
+        margin: 0;
+        padding: 0;
+        background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+    
+    /* Ensure container has background immediately */
+    #earth-container {
+        background: #000000;
+    }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: radial-gradient(ellipse at bottom, #030614 0%, #000000 100%);
+            overflow-x: hidden;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Animated stars background */
+        @keyframes moveStars {
+            from { transform: translateY(0px); }
+            to { transform: translateY(-2000px); }
+        }
+
+        .stars, .twinkling {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            pointer-events: none;
+        }
+
+        .stars {
+            background: #000 url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUgY3g9IjEiIGN5PSIxIiByPSIxIiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg==') repeat;
+            z-index: 0;
+            animation: moveStars 200s linear infinite;
+            opacity: 0.5;
+        }
+
+        .twinkling {
+            background: transparent url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNCIgaGVpZ2h0PSI0IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUgY3g9IjIiIGN5PSIyIiByPSIxIiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC4zIi8+PC9zdmc+') repeat;
+            z-index: 1;
+            animation: moveStars 150s linear infinite;
+            opacity: 0.3;
+        }
+
+        /* Glass Header */
+        header {
+            background: rgba(10, 20, 40, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(65, 105, 225, 0.3);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+            text-shadow: 0 0 20px rgba(65, 105, 225, 0.5);
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #fff 0%, #4169E1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: all 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+            text-shadow: 0 0 30px rgba(65, 105, 225, 0.8);
+        }
+
+        nav {
+            display: flex;
+            gap: 15px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            padding: 10px 20px;
+            background: rgba(65, 105, 225, 0.15);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(65, 105, 225, 0.3);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        nav a:hover {
+            background: rgba(65, 105, 225, 0.3);
+            border-color: rgba(65, 105, 225, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        nav a.active {
+            background: rgba(65, 105, 225, 0.4);
+            border-color: #4169E1;
+            box-shadow: 0 0 20px rgba(65, 105, 225, 0.5);
+        }
+
+        main {
+            position: relative;
+            z-index: 2;
+            padding: 100px 20px 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 56px;
+            margin-bottom: 10px;
+            text-align: center;
+            background: linear-gradient(135deg, #ffffff 0%, #4169E1 50%, #ffffff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(65, 105, 225, 0.3);
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 30px;
+            text-align: center;
+            max-width: 800px;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            background: rgba(20, 30, 50, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            padding: 15px 25px;
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .control-btn {
+            padding: 12px 28px;
+            background: rgba(65, 105, 225, 0.2);
+            border: 1px solid rgba(65, 105, 225, 0.3);
+            border-radius: 30px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-btn:hover {
+            background: rgba(65, 105, 225, 0.4);
+            border-color: #4169E1;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(65, 105, 225, 0.3);
+        }
+
+        .control-btn.active {
+            background: #4169E1;
+            border-color: #4169E1;
+        }
+
+        /* Earth Container */
+        #earth-container {
+            width: 100%;
+            max-width: 1400px;
+            height: 600px;
+            border-radius: 24px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+            width: 100%;
+            max-width: 1200px;
+            margin-top: 30px;
+        }
+
+        .stat-card {
+            background: rgba(20, 30, 50, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(65, 105, 225, 0.4);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 30px rgba(65, 105, 225, 0.2);
+        }
+
+        .stat-icon {
+            font-size: 32px;
+            margin-bottom: 15px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #4169E1;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+
+        /* Info Panel */
+        .info-panel {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 300px;
+            background: rgba(20, 30, 50, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(65, 105, 225, 0.3);
+            border-radius: 20px;
+            padding: 20px;
+            color: white;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1001;
+        }
+
+        .info-panel.show {
+            transform: translateX(0);
+        }
+
+        .info-panel h3 {
+            color: #4169E1;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .info-panel p {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* Loading indicator */
+        .loading-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 18px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: 1px solid rgba(65, 105, 225, 0.3);
+            backdrop-filter: blur(5px);
+            z-index: 5;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+            }
+            
+            nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            h1 {
+                font-size: 36px;
+            }
+            
+            .control-panel {
+                border-radius: 20px;
+            }
+            
+            .info-panel {
+                bottom: 20px;
+                right: 20px;
+                width: calc(100% - 40px);
+            }
+        }
+    </style>
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- OrbitControls -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+    <div class="stars"></div>
+    <div class="twinkling"></div>
+
+    <header>
+        <a href="index.html" class="logo">⚡ AEGIS EARTH</a>
+        <nav>
+            <a href="aesteroids.html">🚀 ASTEROIDS</a>
+            <a href="spacecrafts.html">🛸 SPACE CRAFTS</a>
+            <a href="earth.html" class="active">🌍 EARTH</a>
+            <a href="sattilites.html">📡 SATELLITES</a>
+            <a href="predicton.html">🎯 PREDICTION</a>
+        </nav>
+    </header>
+
+    <main>
+        <h1>EARTH MONITORING</h1>
+        <p class="subtitle">Real-time 3D visualization of Earth with satellite tracking and impact zones</p>
+
+        <div class="control-panel">
+            <button class="control-btn active" id="satellites-btn">
+                <span>🛰️</span> Satellites
+            </button>
+            <button class="control-btn" id="impacts-btn">
+                <span>💥</span> Impact Zones
+            </button>
+            <button class="control-btn" id="reset-btn">
+                <span>🔄</span> Reset View
+            </button>
+        </div>
+
+        <div id="earth-container">
+            <div class="loading-indicator" id="loading">Loading 3D Earth...</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">🛰️</div>
+                <div class="stat-value">147</div>
+                <div class="stat-label">Active Satellites</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💫</div>
+                <div class="stat-value">32,847</div>
+                <div class="stat-label">NEOs Tracked</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⚠️</div>
+                <div class="stat-value">2,304</div>
+                <div class="stat-label">Potentially Hazardous</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🌍</div>
+                <div class="stat-value">24/7</div>
+                <div class="stat-label">Global Coverage</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Info Panel -->
+    <div class="info-panel" id="info-panel">
+        <button class="close-btn" onclick="hideInfo()">✕</button>
+        <h3 id="info-title">Earth Observation</h3>
+        <p id="info-content">Real-time 3D visualization of Earth with active satellite positions.</p>
+    </div>
+
+    <script>
+        // Wait for DOM to load
+        document.addEventListener('DOMContentLoaded', function() {
+            initEarth();
+        });
+
+        function initEarth() {
+            const container = document.getElementById('earth-container');
+            const loadingEl = document.getElementById('loading');
+            
+            if (!container) return;
+
+            try {
+                // Scene setup
+                const scene = new THREE.Scene();
+                scene.background = new THREE.Color(0x030614);
+                
+                // Camera
+                const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+                camera.position.set(0, 2, 15);
+                
+                // Renderer
+                const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+                renderer.setSize(container.clientWidth, container.clientHeight);
+                renderer.shadowMap.enabled = false;
+                renderer.setPixelRatio(window.devicePixelRatio);
+                container.innerHTML = ''; // Clear loading indicator
+                container.appendChild(renderer.domElement);
+                
+                // Controls
+                const controls = new THREE.OrbitControls(camera, renderer.domElement);
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.05;
+                controls.autoRotate = true;
+                controls.autoRotateSpeed = 0.5;
+                controls.enableZoom = true;
+                controls.maxPolarAngle = Math.PI / 2;
+                controls.minDistance = 8;
+                controls.maxDistance = 30;
+
+                // Lighting
+                const ambientLight = new THREE.AmbientLight(0x404060, 0.6);
+                scene.add(ambientLight);
+                
+                const sunLight = new THREE.DirectionalLight(0xffeedd, 1.2);
+                sunLight.position.set(10, 10, 10);
+                scene.add(sunLight);
+                
+                const backLight = new THREE.PointLight(0x4466ff, 0.3);
+                backLight.position.set(-5, 0, -10);
+                scene.add(backLight);
+
+                // Starfield background
+                const starsGeometry = new THREE.BufferGeometry();
+                const starsCount = 2000;
+                const starPositions = new Float32Array(starsCount * 3);
+                
+                for (let i = 0; i < starsCount * 3; i += 3) {
+                    const r = 50 + Math.random() * 50;
+                    const theta = Math.random() * Math.PI * 2;
+                    const phi = Math.acos(2 * Math.random() - 1);
+                    
+                    starPositions[i] = r * Math.sin(phi) * Math.cos(theta);
+                    starPositions[i+1] = r * Math.sin(phi) * Math.sin(theta);
+                    starPositions[i+2] = r * Math.cos(phi);
+                }
+                
+                starsGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+                const starsMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1 });
+                const starsField = new THREE.Points(starsGeometry, starsMaterial);
+                scene.add(starsField);
+
+                // Create Earth with texture
+                const earthGroup = new THREE.Group();
+                
+                // Load Earth texture (using a free texture from Three.js examples)
+                const textureLoader = new THREE.TextureLoader();
+                
+                // Use high-quality Earth texture from Three.js examples
+                const earthMap = textureLoader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');
+                const earthSpecularMap = textureLoader.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg');
+                const earthNormalMap = textureLoader.load('https://threejs.org/examples/textures/planets/earth_normal_2048.jpg');
+                const cloudMap = textureLoader.load('https://threejs.org/examples/textures/planets/earth_clouds_1024.png');
+                
+                // Earth material
+                const earthMaterial = new THREE.MeshPhongMaterial({
+                    map: earthMap,
+                    specularMap: earthSpecularMap,
+                    specular: new THREE.Color('grey'),
+                    shininess: 10,
+                    normalMap: earthNormalMap,
+                    normalScale: new THREE.Vector2(0.5, 0.5)
+                });
+                
+                const earthGeometry = new THREE.SphereGeometry(5, 64, 64);
+                const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+                earthGroup.add(earth);
+                
+                // Cloud layer
+                const cloudMaterial = new THREE.MeshPhongMaterial({
+                    map: cloudMap,
+                    transparent: true,
+                    opacity: 0.3,
+                    blending: THREE.AdditiveBlending,
+                    side: THREE.DoubleSide
+                });
+                
+                const cloudGeometry = new THREE.SphereGeometry(5.01, 64, 64);
+                const clouds = new THREE.Mesh(cloudGeometry, cloudMaterial);
+                earthGroup.add(clouds);
+                
+                // Atmosphere glow
+                const glowMaterial = new THREE.MeshPhongMaterial({
+                    color: 0x4169E1,
+                    emissive: 0x112244,
+                    transparent: true,
+                    opacity: 0.15,
+                    side: THREE.BackSide
+                });
+                
+                const glowGeometry = new THREE.SphereGeometry(5.2, 64, 64);
+                const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+                earthGroup.add(glow);
+                
+                scene.add(earthGroup);
+
+                // Create satellites
+                const satellites = [];
+                const satelliteCount = 50;
+                
+                for (let i = 0; i < satelliteCount; i++) {
+                    // Random orbit
+                    const radius = 5.3 + Math.random() * 1.5;
+                    const lat = Math.asin(Math.random() * 2 - 1);
+                    const lon = Math.random() * Math.PI * 2;
+                    
+                    // Convert to Cartesian
+                    const x = radius * Math.cos(lat) * Math.cos(lon);
+                    const y = radius * Math.sin(lat);
+                    const z = radius * Math.cos(lat) * Math.sin(lon);
+                    
+                    // Satellite color (mostly green)
+                    const rand = Math.random();
+                    let color;
+                    if (rand < 0.8) color = 0x00ff00;
+                    else if (rand < 0.95) color = 0xffff00;
+                    else color = 0xff0000;
+                    
+                    // Create satellite as a small sphere
+                    const satGeo = new THREE.SphereGeometry(0.08, 8);
+                    const satMat = new THREE.MeshPhongMaterial({ 
+                        color: color,
+                        emissive: 0x222222
+                    });
+                    const sat = new THREE.Mesh(satGeo, satMat);
+                    sat.position.set(x, y, z);
+                    
+                    // Add orbit path
+                    if (i % 10 === 0) {
+                        const orbitPoints = [];
+                        for (let j = 0; j <= 64; j++) {
+                            const angle = (j / 64) * Math.PI * 2;
+                            const orbitLat = lat;
+                            const orbitLon = angle;
+                            const ox = radius * Math.cos(orbitLat) * Math.cos(orbitLon);
+                            const oy = radius * Math.sin(orbitLat);
+                            const oz = radius * Math.cos(orbitLat) * Math.sin(orbitLon);
+                            orbitPoints.push(new THREE.Vector3(ox, oy, oz));
+                        }
+                        
+                        const orbitGeo = new THREE.BufferGeometry().setFromPoints(orbitPoints);
+                        const orbitMat = new THREE.LineBasicMaterial({ color: 0x4169E1, opacity: 0.2, transparent: true });
+                        const orbitLine = new THREE.LineLoop(orbitGeo, orbitMat);
+                        scene.add(orbitLine);
+                    }
+                    
+                    scene.add(sat);
+                    satellites.push({ mesh: sat, radius, lat, lon, speed: 0.001 + Math.random() * 0.002 });
+                }
+
+                // Create impact zones (red circles on Earth)
+                const impactZones = [];
+                const impactSites = [
+                    { lat: 34.0, lon: -118.5, name: "Los Angeles", size: 3.2 },
+                    { lat: 40.7, lon: -74.0, name: "New York", size: 2.8 },
+                    { lat: 35.7, lon: 139.7, name: "Tokyo", size: 4.1 },
+                    { lat: 40.4, lon: -3.7, name: "Madrid", size: 1.9 },
+                    { lat: -33.9, lon: 151.2, name: "Sydney", size: 2.3 },
+                    { lat: 55.8, lon: 37.6, name: "Moscow", size: 3.5 }
+                ];
+                
+                impactSites.forEach(site => {
+                    // Convert lat/lon to radians
+                    const lat = site.lat * Math.PI / 180;
+                    const lon = site.lon * Math.PI / 180;
+                    
+                    // Position on Earth's surface
+                    const radius = 5.05; // Slightly above surface
+                    const x = radius * Math.cos(lat) * Math.cos(lon);
+                    const y = radius * Math.sin(lat);
+                    const z = radius * Math.cos(lat) * Math.sin(lon);
+                    
+                    // Create a glowing ring
+                    const ringGeo = new THREE.TorusGeometry(0.2, 0.03, 16, 32);
+                    const ringMat = new THREE.MeshPhongMaterial({ 
+                        color: 0xff0000,
+                        emissive: 0x330000,
+                        transparent: true,
+                        opacity: 0.7
+                    });
+                    const ring = new THREE.Mesh(ringGeo, ringMat);
+                    
+                    // Orient ring to face outward
+                    ring.position.set(x, y, z);
+                    ring.quaternion.setFromUnitVectors(
+                        new THREE.Vector3(0, 1, 0),
+                        new THREE.Vector3(x, y, z).normalize()
+                    );
+                    
+                    ring.visible = false; // Hidden by default
+                    scene.add(ring);
+                    
+                    impactZones.push({ 
+                        mesh: ring, 
+                        data: site,
+                        lat, lon, radius
+                    });
+                });
+
+                // Animation variables
+                let currentMode = 'satellites';
+                
+                // Animation loop
+                function animate() {
+                    requestAnimationFrame(animate);
+                    
+                    // Rotate Earth
+                    earthGroup.rotation.y += 0.0005;
+                    
+                    // Rotate clouds slightly faster
+                    clouds.rotation.y += 0.0007;
+                    
+                    // Rotate satellites
+                    satellites.forEach(sat => {
+                        sat.lon += sat.speed;
+                        const x = sat.radius * Math.cos(sat.lat) * Math.cos(sat.lon);
+                        const y = sat.radius * Math.sin(sat.lat);
+                        const z = sat.radius * Math.cos(sat.lat) * Math.sin(sat.lon);
+                        sat.mesh.position.set(x, y, z);
+                    });
+                    
+                    controls.update();
+                    renderer.render(scene, camera);
+                }
+                
+                animate();
+
+                // Button handlers
+                document.getElementById('satellites-btn').addEventListener('click', function() {
+                    currentMode = 'satellites';
+                    
+                    // Show satellites, hide impact zones
+                    satellites.forEach(s => s.mesh.visible = true);
+                    impactZones.forEach(z => z.mesh.visible = false);
+                    
+                    document.getElementById('satellites-btn').classList.add('active');
+                    document.getElementById('impacts-btn').classList.remove('active');
+                    
+                    showInfo('Satellite Network', 'Displaying 50 active satellites. Green = Active, Yellow = Tracking, Red = Maintenance.');
+                });
+
+                document.getElementById('impacts-btn').addEventListener('click', function() {
+                    currentMode = 'impacts';
+                    
+                    // Hide satellites, show impact zones
+                    satellites.forEach(s => s.mesh.visible = false);
+                    impactZones.forEach(z => z.mesh.visible = true);
+                    
+                    document.getElementById('satellites-btn').classList.remove('active');
+                    document.getElementById('impacts-btn').classList.add('active');
+                    
+                    showInfo('Impact Zones', 'Predicted impact zones based on current trajectories. Red zones indicate highest probability areas.');
+                });
+
+                document.getElementById('reset-btn').addEventListener('click', function() {
+                    controls.autoRotate = true;
+                    camera.position.set(0, 2, 15);
+                    controls.target.set(0, 0, 0);
+                });
+
+                // Info panel functions
+                function showInfo(title, content) {
+                    document.getElementById('info-title').textContent = title;
+                    document.getElementById('info-content').textContent = content;
+                    document.getElementById('info-panel').classList.add('show');
+                }
+
+                window.hideInfo = function() {
+                    document.getElementById('info-panel').classList.remove('show');
+                };
+
+                // Raycaster for hover effects
+                const raycaster = new THREE.Raycaster();
+                const mouse = new THREE.Vector2();
+                
+                renderer.domElement.addEventListener('mousemove', (event) => {
+                    const rect = renderer.domElement.getBoundingClientRect();
+                    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+                    
+                    raycaster.setFromCamera(mouse, camera);
+                    
+                    if (currentMode === 'satellites') {
+                        const intersects = raycaster.intersectObjects(satellites.map(s => s.mesh));
+                        
+                        if (intersects.length > 0) {
+                            const sat = satellites.find(s => s.mesh === intersects[0].object);
+                            if (sat) {
+                                showInfo('Satellite', 'Status: Active\nAltitude: ' + ((sat.radius - 5) * 1000).toFixed(0) + 'km');
+                            }
+                        }
+                    } else if (currentMode === 'impacts') {
+                        const intersects = raycaster.intersectObjects(impactZones.map(z => z.mesh));
+                        
+                        if (intersects.length > 0) {
+                            const zone = impactZones.find(z => z.mesh === intersects[0].object);
+                            if (zone) {
+                                showInfo(zone.data.name, 'Impact Zone\nDiameter: ' + zone.data.size + 'km\nProbability: 73%');
+                            }
+                        }
+                    }
+                });
+
+                // Handle window resize
+                window.addEventListener('resize', () => {
+                    camera.aspect = container.clientWidth / container.clientHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(container.clientWidth, container.clientHeight);
+                });
+
+                console.log('Three.js Earth initialized successfully');
+                
+            } catch (error) {
+                console.error('Error initializing Three.js:', error);
+                container.innerHTML = '<div style="color: white; text-align: center; padding: 50px;">' +
+                    '<h3 style="color: #ff6b6b;">⚠️ Error Loading 3D Earth</h3>' +
+                    '<p>Please refresh the page or check your internet connection.</p>' +
+                    '</div>';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aegis Earth - Planetary Defense System</title>
+    <style>
+    /* Immediate background to prevent white flash */
+    html, body {
+        margin: 0;
+        padding: 0;
+        background: radial-gradient(ellipse at bottom, #030614 0%, #000000 100%);
+        min-height: 100vh;
+    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+            overflow-x: hidden;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Animated stars background */
+        @keyframes moveStars {
+            from { transform: translateY(0px); }
+            to { transform: translateY(-2000px); }
+        }
+
+        .stars, .twinkling {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            pointer-events: none;
+        }
+
+        .stars {
+            background: #000 url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUgY3g9IjEiIGN5PSIxIiByPSIxIiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg==') repeat;
+            z-index: 0;
+            animation: moveStars 200s linear infinite;
+            opacity: 0.5;
+        }
+
+        .twinkling {
+            background: transparent url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNCIgaGVpZ2h0PSI0IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUgY3g9IjIiIGN5PSIyIiByPSIxIiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC4zIi8+PC9zdmc+') repeat;
+            z-index: 1;
+            animation: moveStars 150s linear infinite;
+            opacity: 0.3;
+        }
+
+        /* Glass Header */
+        header {
+            background: rgba(10, 20, 40, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(65, 105, 225, 0.3);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+            text-shadow: 0 0 20px rgba(65, 105, 225, 0.5);
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #fff 0%, #4169E1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: all 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+            text-shadow: 0 0 30px rgba(65, 105, 225, 0.8);
+        }
+
+        nav {
+            display: flex;
+            gap: 15px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            padding: 10px 20px;
+            background: rgba(65, 105, 225, 0.15);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(65, 105, 225, 0.3);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        nav a:hover {
+            background: rgba(65, 105, 225, 0.3);
+            border-color: rgba(65, 105, 225, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        nav a.active {
+            background: rgba(65, 105, 225, 0.4);
+            border-color: #4169E1;
+            box-shadow: 0 0 20px rgba(65, 105, 225, 0.5);
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            z-index: 2;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .hero-title {
+            font-size: 72px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ffffff 0%, #4169E1 50%, #ffffff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 50px rgba(65, 105, 225, 0.3);
+            animation: fadeInUp 1s ease;
+        }
+
+        .hero-subtitle {
+            font-size: 24px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 40px;
+            max-width: 800px;
+            line-height: 1.6;
+            animation: fadeInUp 1s ease 0.2s both;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 50px;
+            margin-top: 50px;
+            animation: fadeInUp 1s ease 0.4s both;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 48px;
+            font-weight: bold;
+            color: #4169E1;
+            text-shadow: 0 0 20px rgba(65, 105, 225, 0.5);
+        }
+
+        .stat-label {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 10px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 18px 45px;
+            background: linear-gradient(135deg, #4169E1, #1E3A8A);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            margin-top: 30px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 1s ease 0.6s both;
+            box-shadow: 0 10px 30px rgba(65, 105, 225, 0.3);
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .cta-button:hover::before {
+            left: 100%;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(65, 105, 225, 0.5);
+        }
+
+        /* Features Section */
+        .features {
+            position: relative;
+            z-index: 2;
+            padding: 100px 50px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: rgba(20, 30, 50, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(65, 105, 225, 0.3);
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(65, 105, 225, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .feature-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: white;
+        }
+
+        .feature-description {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Spline Container */
+        .spline-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        spline-viewer {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+            }
+            
+            nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .hero-title {
+                font-size: 48px;
+            }
+            
+            .hero-subtitle {
+                font-size: 18px;
+            }
+            
+            .hero-stats {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .features {
+                padding: 50px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="preloader" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000000; z-index: 9999; display: flex; justify-content: center; align-items: center;">
+    <div style="color: #4169E1; font-size: 24px;">Loading Aegis Earth...</div>
+</div>
+
+<script>
+    window.addEventListener('load', function() {
+        const preloader = document.getElementById('preloader');
+        if (preloader) {
+            preloader.style.display = 'none';
+        }
+    });
+</script>
+    <div class="stars"></div>
+    <div class="twinkling"></div>
+
+    <header>
+        <a href="index.html" class="logo">⚡ AEGIS EARTH</a>
+        <nav>
+            <a href="aesteroids.html">🚀 ASTEROIDS</a>
+            <a href="spacecrafts.html">🛸 SPACE CRAFTS</a>
+            <a href="earth.html">🌍 EARTH</a>
+            <a href="sattilites.html">📡 SATELLITES</a>
+            <a href="predicton.html">🎯 PREDICTION</a>
+        </nav>
+    </header>
+
+    <div class="spline-container">
+        <script type="module" src="https://unpkg.com/@splinetool/viewer@1.12.39/build/spline-viewer.js"></script>
+        <spline-viewer url="https://prod.spline.design/TK78icNhSPV31P3v/scene.splinecode"></spline-viewer>
+    </div>
+
+    <div class="hero">
+        <h1 class="hero-title">AEGIS EARTH</h1>
+        <p class="hero-subtitle">Advanced Planetary Defense System • Real-time Asteroid Tracking • AI-Powered Impact Prediction</p>
+        
+        <div class="hero-stats">
+            <div class="stat-item">
+                <div class="stat-number">30,000+</div>
+                <div class="stat-label">NEOs Tracked</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">99.8%</div>
+                <div class="stat-label">Prediction Accuracy</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">24/7</div>
+                <div class="stat-label">Monitoring</div>
+            </div>
+        </div>
+
+        <a href="predicton.html" class="cta-button">🚀 LAUNCH PREDICTION SYSTEM</a>
+    </div>
+
+    <div class="features">
+        <div class="feature-card">
+            <div class="feature-icon">🛰️</div>
+            <div class="feature-title">NASA NEO Integration</div>
+            <div class="feature-description">Real-time asteroid tracking data from NASA's Near-Earth Object program</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🌍</div>
+            <div class="feature-title">USGS Terrain Analysis</div>
+            <div class="feature-description">High-resolution geological data for accurate impact site prediction</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <div class="feature-title">AI Impact Prediction</div>
+            <div class="feature-description">Triple-modal fusion AI for unprecedented prediction accuracy</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🛸</div>
+            <div class="feature-title">Spacecraft Telemetry</div>
+            <div class="feature-description">Kinetic impactor simulation and deflection analysis</div>
+        </div>
+    </div>
+</body>
+</html>

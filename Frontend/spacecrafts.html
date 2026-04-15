@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aegis Earth - Spacecraft Fleet</title>
+    <style>
+    /* Immediate background to prevent white flash */
+    html, body {
+        margin: 0;
+        padding: 0;
+        background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+            overflow-x: hidden;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Animated stars background */
+        @keyframes moveStars {
+            from { transform: translateY(0px); }
+            to { transform: translateY(-2000px); }
+        }
+
+        .stars, .twinkling {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            pointer-events: none;
+        }
+
+        .stars {
+            background: #000 url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUgY3g9IjEiIGN5PSIxIiByPSIxIiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg==') repeat;
+            z-index: 0;
+            animation: moveStars 200s linear infinite;
+            opacity: 0.5;
+        }
+
+        .twinkling {
+            background: transparent url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNCIgaGVpZ2h0PSI0IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUgY3g9IjIiIGN5PSIyIiByPSIxIiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC4zIi8+PC9zdmc+') repeat;
+            z-index: 1;
+            animation: moveStars 150s linear infinite;
+            opacity: 0.3;
+        }
+
+        /* Glass Header */
+        header {
+            background: rgba(10, 20, 40, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(65, 105, 225, 0.3);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+            text-shadow: 0 0 20px rgba(65, 105, 225, 0.5);
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #fff 0%, #4169E1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: all 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+            text-shadow: 0 0 30px rgba(65, 105, 225, 0.8);
+        }
+
+        nav {
+            display: flex;
+            gap: 15px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            padding: 10px 20px;
+            background: rgba(65, 105, 225, 0.15);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(65, 105, 225, 0.3);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        nav a:hover {
+            background: rgba(65, 105, 225, 0.3);
+            border-color: rgba(65, 105, 225, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        nav a.active {
+            background: rgba(65, 105, 225, 0.4);
+            border-color: #4169E1;
+            box-shadow: 0 0 20px rgba(65, 105, 225, 0.5);
+        }
+
+        main {
+            position: relative;
+            z-index: 2;
+            padding: 100px 30px 30px;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        h1 {
+            font-size: 56px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ffffff 0%, #4169E1 50%, #ffffff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(65, 105, 225, 0.3);
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.7);
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Spacecraft Grid */
+        .spacecraft-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .spacecraft-card {
+            background: rgba(20, 30, 50, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .spacecraft-card:hover {
+            border-color: rgba(65, 105, 225, 0.4);
+            transform: translateY(-10px);
+            box-shadow: 0 30px 40px rgba(65, 105, 225, 0.3);
+        }
+
+        .card-image {
+            height: 250px;
+            background: linear-gradient(135deg, #1a2a3a, #0a1a2a);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-image svg {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-content {
+            padding: 25px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .spacecraft-name {
+            font-size: 28px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: rgba(0, 255, 0, 0.15);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: #6bff6b;
+        }
+
+        .status-standby {
+            background: rgba(255, 165, 0, 0.15);
+            border: 1px solid rgba(255, 165, 0, 0.3);
+            color: #ffb347;
+        }
+
+        .status-development {
+            background: rgba(65, 105, 225, 0.15);
+            border: 1px solid rgba(65, 105, 225, 0.3);
+            color: #4169E1;
+        }
+
+        .spacecraft-desc {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
+
+        .specs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+        }
+
+        .spec-item {
+            text-align: center;
+        }
+
+        .spec-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 5px;
+        }
+
+        .spec-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .capabilities {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .capability-tag {
+            padding: 4px 12px;
+            background: rgba(65, 105, 225, 0.15);
+            border: 1px solid rgba(65, 105, 225, 0.3);
+            border-radius: 20px;
+            font-size: 12px;
+            color: #4169E1;
+        }
+
+        .learn-more {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #4169E1, #1E3A8A);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .learn-more:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(65, 105, 225, 0.4);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Stats Section */
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .stat-card {
+            background: rgba(20, 30, 50, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #4169E1;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+            }
+            
+            nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            h1 {
+                font-size: 36px;
+            }
+            
+            .spacecraft-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars"></div>
+    <div class="twinkling"></div>
+
+    <header>
+        <a href="index.html" class="logo">⚡ AEGIS EARTH</a>
+        <nav>
+            <a href="aesteroids.html">🚀 ASTEROIDS</a>
+            <a href="spacecrafts.html" class="active">🛸 SPACE CRAFTS</a>
+            <a href="earth.html">🌍 EARTH</a>
+            <a href="sattilites.html">📡 SATELLITES</a>
+            <a href="predicton.html">🎯 PREDICTION</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="page-header">
+            <h1>SPACECRAFT FLEET</h1>
+            <p class="subtitle">Advanced kinetic impactors and interceptors for planetary defense</p>
+        </div>
+
+        <div class="stats-section">
+            <div class="stat-card">
+                <div class="stat-number">12</div>
+                <div class="stat-label">Active Spacecraft</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">8</div>
+                <div class="stat-label">In Development</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">4</div>
+                <div class="stat-label">On Standby</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Mission Success</div>
+            </div>
+        </div>
+
+        <div class="spacecraft-grid">
+            <!-- RK-01 DART Class -->
+            <div class="spacecraft-card">
+                <div class="card-image">
+                    <svg viewBox="0 0 400 250" style="background: linear-gradient(135deg, #1a2a3a, #0a1a2a);">
+                        <rect width="400" height="250" fill="url(#grad1)"/>
+                        <defs>
+                            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#2a3a4a;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#1a2a3a;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <!-- Simplified spacecraft silhouette -->
+                        <polygon points="200,100 260,140 260,180 140,180 140,140 200,100" fill="#4169E1" opacity="0.8"/>
+                        <rect x="180" y="70" width="40" height="30" fill="#5A7FFF"/>
+                        <circle cx="200" cy="120" r="15" fill="#FFD700" opacity="0.6"/>
+                    </svg>
+                </div>
+                <div class="card-content">
+                    <div class="card-header">
+                        <span class="spacecraft-name">RK-01 DART</span>
+                        <span class="status-badge status-active">🟢 ACTIVE</span>
+                    </div>
+                    <p class="spacecraft-desc">Kinetic impactor based on NASA's DART mission. Optimized for S-type asteroids up to 150m diameter.</p>
+                    
+                    <div class="specs-grid">
+                        <div class="spec-item">
+                            <div class="spec-label">Mass</div>
+                            <div class="spec-value">610 kg</div>
+                        </div>
+                        <div class="spec-item">
+                            <div class="spec-label">Velocity</div>
+                            <div class="spec-value">6.6 km/s</div>
+                        </div>
+                        <div class="spec-item">
+                            <div class="spec-label">Range</div>
+                            <div class="spec-value">0.5 AU</div>
+                        </div>
+                        <div class="spec-item">
+                            <div class="spec-label">Power</div>
+                            <div class="spec-value">3.5 kW</div>
+                        </div>
+                    </div>
+
+                    <div class="capabilities">
+                        <span class="capability-tag">Kinetic Impactor</span>
+                        <span class="capability-tag">S-type Target</span>
+                        <span class="capability-tag">DRAGON</span>
+                    </div>
+
+                    <button class="learn-more">VIEW MISSION PROFILE</button>
+                </div>
+            </div>
+
+            <!-- RK-02 Orion Class -->
+            <div class="spacecraft-card">
+                <div class="card-image">
+                    <svg viewBox="0 0 400 250" style="background: linear-gradient(135deg, #1a2a3a, #0a1a2a);">
+                        <rect width="400" height="250" fill="url(#grad1)"/>
+                        <defs>
+                            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#2a3a4a;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#1a2a3a;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <!-- Simplified Orion silhouette -->
+                        <polygon points="200,80 280,130 280,190 120,190 120,130 200,80" fill="#FF6B35" opacity="0.8"/>
+                        <circle cx="200" cy="150" r="25" fill="#FF8C5A"/>
+                        <rect x="170" y="50" width="60" height="30" fill="#FFA07A"/>
+                    </svg>
+                </div>
+                <div class="card-content">
+                    <div class="card-header">
+                        <span class="spacecraft-name">RK-02 ORION</span>
+                        <span class="status-badge status-standby">🟡 STANDBY</span>
+                    </div>
+                    <p class="spacecraft-desc">Heavy interceptor for M-type metallic asteroids. Enhanced propulsion for high-speed intercept.</p>
+                    
+                    <div class="specs-grid">
+                        <div class="spec-item">
+                            <div class="spec-label">Mass</div>
+                            <div class="spec-value">2,500 kg</div>
+                        </div>
+                        <div class="spec-item">
+                            <div class="spec-label">Velocity</div>
+                            <div class="spec-value">9.2 km/s</div>
+                        </div>
+                        <div class="spec-item">
+                            <div class="spec-label">Range</div>
+                            <div class="spec-value">1.2 AU</div>
+                        </div>
+                        <div class="spec-item">
+                            <div class="spec-label">Power</div>
+                            <div class="spec-value">8.2 kW</div>
+                        </div>
+                    </div>
+
+                    <div class="capabilities">
+                        <span class="capability-tag">Nuclear Option</span>
+                        <span class="capability-tag">M-type Target</span>
+                        <span class="capability-tag">Deep Space</span>
+                    </div>
+
+                    <button class="learn-more">VIEW MISSION PROFILE</button>
+                </div>
+            </div>
+
+            <!-- Aegis-X Interceptor -->
+            <div class="spacecraft-card">
+                <div class="card-image">
+                    <svg viewBox="0 0 400 250" style="background: linear-gradient(135deg, #1a2a3a, #0a1a2a);">
+                        <rect width="400" height="250" fill="url(#grad1)"/>
+                        <defs>
+                            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#2a3a4a;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#1a2a3a;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <!-- Aegis-X silhouette -->
+                        <polygon points="200,70 300,120 300,200 100,200 100,120 200,70" fill="#00CED1" opacity="0.8"/>
+                        <circle cx="200" cy="145" r="20" fill="#40E0D0"/>
+                        <rect x="180" y="40" width="40" height="30" fill="#48D1CC"/>
+                        <polygon points="200,70 230,85 200,100 170,85" fill="#FFFFFF" opacity="0.3"/>
+                    </svg>
+                </div>
+                <div class="card-content">
+                    <div class="card-header">
+                        <span class="spacecraft-name">AEGIS-X</span>
+                        <span class="status-badge status-development">🔵 IN DEVELOPMENT</span>
+                    </div>
+                    <p class="spacecraft-desc">Next-gen interceptor with AI-driven trajectory optimization and real-time telemetry integration.</p>
+                    
+                    <div class="specs-grid">
+                        <div class="spec-item">
+                            <div class="spec-label">Mass</div>
+                            <div class="spec-value">1,800 kg</div>
+                        </div>
+                        <div class="spec-item">
+                            <div class="spec-label">Velocity</div>
+                            <div class="spec-value">12.5 km/s</div>
+                        </div>
+                        <div class="spec-item">
+                            <div class="spec-label">Range</div>
+                            <div class="spec-value">2.0 AU</div>
+                        </div>
+                        <div class="spec-item">
+                            <div class="spec-label">Power</div>
+                            <div class="spec-value">15 kW</div>
+                        </div>
+                    </div>
+
+                    <div class="capabilities">
+                        <span class="capability-tag">AI Pilot</span>
+                        <span class="capability-tag">Multi-target</span>
+                        <span class="capability-tag">Quantum Comms</span>
+                        <span class="capability-tag">Auto-destruct</span>
+                    </div>
+
+                    <button class="learn-more">VIEW MISSION PROFILE</button>
+                </div>
+            </div>
+
+            <!-- HAMMER Class -->
+            <div class="spacecraft-card">
+                <div class="card-image">
+                    <svg viewBox="0 0 400 250" style="background: linear-gradient(135deg, #1a2a3a, #0a1a2a);">
+                        <rect width="400" height="250" fill="url(#grad1)"/>
+                        <defs>
+                            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#2a3a4a;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#1a2a3a;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <!-- HAMMER silhouette -->
+                        <rect x="150" y="100" width="100" height="80" fill="#8B4513" opacity="0.9"/>
+                        <rect x="180" y="60" width="40" height="40" fill="#A0522D"/>
+                        <circle cx="200" cy="140" r="15" fill="#CD853F"/>
+                    </svg>
+                </div>
+                <div class="card-content">
+                    <div class="card-header">
+                        <span class="spacecraft-name">HAMMER</span>
+                        <span class="status-badge status-standby">🟡 STANDBY</span>
+                    </div>
+                    <p class="spacecraft-desc">Heavy Asteroid Mitigation Module for Earth Response. Multiple kinetic penetrators.</p>
+                    
+                    <div class="specs-grid">
+                        <div class="spec-item">
+                            <div class="spec-label">Mass</div>
+                            <div class="spec-value">8,000 kg</div>
+                        </div>
+                        <div class="spec-item">
+                            <div class="spec-label">Velocity</div>
+                            <div class="spec-value">8.0 km/s</div>
+                        </div>
+                        <div class="spec-item">
+                            <div class="spec-label">Range</div>
+                            <div class="spec-value">0.8 AU</div>
+                        </div>
+                        <div class="spec-item">
+                            <div class="spec-label">Warheads</div>
+                            <div class="spec-value">6</div>
+                        </div>
+                    </div>
+
+                    <div class="capabilities">
+                        <span class="capability-tag">Multiple Penetrators</span>
+                        <span class="capability-tag">Nuclear Option</span>
+                        <span class="capability-tag">C-type</span>
+                    </div>
+
+                    <button class="learn-more">VIEW MISSION PROFILE</button>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

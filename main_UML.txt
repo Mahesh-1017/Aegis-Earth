@@ -1,0 +1,38 @@
+@startuml
+class NASAData {
+        __init__()
+}
+class USGSData {
+        __init__()
+}
+class TelemetryData {
+        __init__()
+}
+class AsteroidInput {
+    validate_diameter()
+    validate_velocity()
+    validate_composition()
+        __init__()
+}
+class FullImpactInput {
+        __init__()
+}
+class PredictionResponse {
+        __init__()
+}
+class HealthResponse {
+    get_composition_name()
+    get_composition_from_string()
+    prepare_full_input()
+    prepare_simple_input()
+    estimate_confidence()
+        __init__()
+}
+BaseModel <|-- NASAData
+BaseModel <|-- USGSData
+BaseModel <|-- TelemetryData
+BaseModel <|-- AsteroidInput
+BaseModel <|-- FullImpactInput
+BaseModel <|-- PredictionResponse
+BaseModel <|-- HealthResponse
+@enduml
