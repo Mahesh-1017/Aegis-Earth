@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aegis Earth - Satellite Network</title>
+    <style>
+    /* Immediate background to prevent white flash */
+    html, body {
+        margin: 0;
+        padding: 0;
+        background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+            overflow-x: hidden;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Animated stars background */
+        @keyframes moveStars {
+            from { transform: translateY(0px); }
+            to { transform: translateY(-2000px); }
+        }
+
+        .stars, .twinkling {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            pointer-events: none;
+        }
+
+        .stars {
+            background: #000 url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUgY3g9IjEiIGN5PSIxIiByPSIxIiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg==') repeat;
+            z-index: 0;
+            animation: moveStars 200s linear infinite;
+            opacity: 0.5;
+        }
+
+        .twinkling {
+            background: transparent url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNCIgaGVpZ2h0PSI0IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUgY3g9IjIiIGN5PSIyIiByPSIxIiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC4zIi8+PC9zdmc+') repeat;
+            z-index: 1;
+            animation: moveStars 150s linear infinite;
+            opacity: 0.3;
+        }
+
+        /* Glass Header */
+        header {
+            background: rgba(10, 20, 40, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(65, 105, 225, 0.3);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+            text-shadow: 0 0 20px rgba(65, 105, 225, 0.5);
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #fff 0%, #4169E1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: all 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+            text-shadow: 0 0 30px rgba(65, 105, 225, 0.8);
+        }
+
+        nav {
+            display: flex;
+            gap: 15px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            padding: 10px 20px;
+            background: rgba(65, 105, 225, 0.15);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(65, 105, 225, 0.3);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        nav a:hover {
+            background: rgba(65, 105, 225, 0.3);
+            border-color: rgba(65, 105, 225, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        nav a.active {
+            background: rgba(65, 105, 225, 0.4);
+            border-color: #4169E1;
+            box-shadow: 0 0 20px rgba(65, 105, 225, 0.5);
+        }
+
+        main {
+            position: relative;
+            z-index: 2;
+            padding: 100px 30px 30px;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        h1 {
+            font-size: 56px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ffffff 0%, #4169E1 50%, #ffffff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(65, 105, 225, 0.3);
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.7);
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Orbit Visualization */
+        .orbit-container {
+            background: rgba(20, 30, 50, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 30px;
+            margin-bottom: 50px;
+            height: 400px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .orbit-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Satellite Grid */
+        .satellite-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .satellite-card {
+            background: rgba(20, 30, 50, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .satellite-card:hover {
+            border-color: rgba(65, 105, 225, 0.4);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 30px rgba(65, 105, 225, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .satellite-name {
+            font-size: 24px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .orbit-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(65, 105, 225, 0.2);
+            border: 1px solid rgba(65, 105, 225, 0.4);
+            color: #4169E1;
+        }
+
+        .satellite-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .detail-item {
+            text-align: center;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .instruments {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+        }
+
+        .instrument-tag {
+            padding: 4px 12px;
+            background: rgba(65, 105, 225, 0.15);
+            border: 1px solid rgba(65, 105, 225, 0.3);
+            border-radius: 20px;
+            font-size: 12px;
+            color: #4169E1;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .status-online {
+            background: #00ff00;
+            box-shadow: 0 0 10px #00ff00;
+        }
+
+        .status-tracking {
+            background: #ffaa00;
+            box-shadow: 0 0 10px #ffaa00;
+        }
+
+        .status-maintenance {
+            background: #ff4444;
+            box-shadow: 0 0 10px #ff4444;
+        }
+
+        .telemetry-link {
+            width: 100%;
+            padding: 12px;
+            background: rgba(65, 105, 225, 0.2);
+            border: 1px solid rgba(65, 105, 225, 0.3);
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .telemetry-link:hover {
+            background: rgba(65, 105, 225, 0.4);
+            border-color: #4169E1;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(20, 30, 50, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #4169E1;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+            }
+            
+            nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            h1 {
+                font-size: 36px;
+            }
+            
+            .satellite-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars"></div>
+    <div class="twinkling"></div>
+
+    <header>
+        <a href="index.html" class="logo">⚡ AEGIS EARTH</a>
+        <nav>
+            <a href="aesteroids.html">🚀 ASTEROIDS</a>
+            <a href="spacecrafts.html">🛸 SPACE CRAFTS</a>
+            <a href="earth.html">🌍 EARTH</a>
+            <a href="sattilites.html" class="active">📡 SATELLITES</a>
+            <a href="predicton.html">🎯 PREDICTION</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="page-header">
+            <h1>SATELLITE NETWORK</h1>
+            <p class="subtitle">Global surveillance constellation for asteroid detection and tracking</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">147</div>
+                <div class="stat-label">Active Satellites</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">24/7</div>
+                <div class="stat-label">Coverage</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">0.1″</div>
+                <div class="stat-label">Resolution</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Uptime</div>
+            </div>
+        </div>
+
+        <!-- Simple Orbit Visualization -->
+        <div class="orbit-container">
+            <svg class="orbit-svg" viewBox="0 0 800 400">
+                <!-- Earth -->
+                <circle cx="400" cy="200" r="60" fill="#4169E1" filter="url(#glow)"/>
+                <!-- Orbits -->
+                <ellipse cx="400" cy="200" rx="150" ry="80" stroke="rgba(65,105,225,0.3)" stroke-width="2" fill="none" stroke-dasharray="5,5"/>
+                <ellipse cx="400" cy="200" rx="250" ry="120" stroke="rgba(65,105,225,0.3)" stroke-width="2" fill="none" stroke-dasharray="5,5"/>
+                <ellipse cx="400" cy="200" rx="350" ry="160" stroke="rgba(65,105,225,0.3)" stroke-width="2" fill="none" stroke-dasharray="5,5"/>
+                
+                <!-- Satellites -->
+                <circle cx="520" cy="160" r="6" fill="#FFD700">
+                    <animate attributeName="cx" values="520;280;520" dur="10s" repeatCount="indefinite"/>
+                    <animate attributeName="cy" values="160;240;160" dur="10s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="300" cy="280" r="6" fill="#FFD700">
+                    <animate attributeName="cx" values="300;500;300" dur="15s" repeatCount="indefinite"/>
+                    <animate attributeName="cy" values="280;120;280" dur="15s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="600" cy="200" r="6" fill="#FFD700">
+                    <animate attributeName="cx" values="600;200;600" dur="20s" repeatCount="indefinite"/>
+                    <animate attributeName="cy" values="200;200;200" dur="20s" repeatCount="indefinite"/>
+                </circle>
+                
+                <!-- Glow filter -->
+                <defs>
+                    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur in="SourceAlpha" stdDeviation="10"/>
+                        <feMerge>
+                            <feMergeNode in="offsetblur" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
+                </defs>
+            </svg>
+        </div>
+
+        <div class="satellite-grid">
+            <!-- Sentinel-6 -->
+            <div class="satellite-card">
+                <div class="card-header">
+                    <span class="satellite-name">SENTINEL-6</span>
+                    <span class="orbit-badge">LEO</span>
+                </div>
+                
+                <div class="status-indicator">
+                    <div class="status-dot status-online"></div>
+                    <span style="color: #00ff00;">Online - Tracking 127 objects</span>
+                </div>
+
+                <div class="satellite-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Altitude</div>
+                        <div class="detail-value">1,336 km</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Period</div>
+                        <div class="detail-value">112 min</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Inclination</div>
+                        <div class="detail-value">66°</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Launch</div>
+                        <div class="detail-value">2023</div>
+                    </div>
+                </div>
+
+                <div class="instruments">
+                    <span class="instrument-tag">Optical Telescope</span>
+                    <span class="instrument-tag">IR Scanner</span>
+                    <span class="instrument-tag">Radar</span>
+                    <span class="instrument-tag">Track</span>
+                                        <span class="instrument-tag">Track</span>
+                    <span class="instrument-tag">Track</span>
+                </div>
+
+                <button class="telemetry-link">📡 VIEW TELEMETRY</button>
+            </div>
+
+            <!-- NEOWISE -->
+            <div class="satellite-card">
+                <div class="card-header">
+                    <span class="satellite-name">NEOWISE</span>
+                    <span class="orbit-badge">LEO</span>
+                </div>
+                
+                <div class="status-indicator">
+                    <div class="status-dot status-online"></div>
+                    <span style="color: #00ff00;">Online - NEO Survey</span>
+                </div>
+
+                <div class="satellite-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Altitude</div>
+                        <div class="detail-value">525 km</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Period</div>
+                        <div class="detail-value">95 min</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Inclination</div>
+                        <div class="detail-value">97.5°</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Launch</div>
+                        <div class="detail-value">2009</div>
+                    </div>
+                </div>
+
+                <div class="instruments">
+                    <span class="instrument-tag">IR Array</span>
+                    <span class="instrument-tag">NEO Detection</span>
+                    <span class="instrument-tag">Asteroid Survey</span>
+                </div>
+
+                <button class="telemetry-link">📡 VIEW TELEMETRY</button>
+            </div>
+
+            <!-- JAMES WEBB -->
+            <div class="satellite-card">
+                <div class="card-header">
+                    <span class="satellite-name">JWST</span>
+                    <span class="orbit-badge">L2</span>
+                </div>
+                
+                <div class="status-indicator">
+                    <div class="status-dot status-online"></div>
+                    <span style="color: #00ff00;">Online - Deep Space</span>
+                </div>
+
+                <div class="satellite-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Orbit</div>
+                        <div class="detail-value">L2 Halo</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Distance</div>
+                        <div class="detail-value">1.5M km</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Period</div>
+                        <div class="detail-value">6 months</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Launch</div>
+                        <div class="detail-value">2021</div>
+                    </div>
+                </div>
+
+                <div class="instruments">
+                    <span class="instrument-tag">NIRCam</span>
+                    <span class="instrument-tag">MIRI</span>
+                    <span class="instrument-tag">NIRSpec</span>
+                    <span class="instrument-tag">FGS</span>
+                </div>
+
+                <button class="telemetry-link">📡 VIEW TELEMETRY</button>
+            </div>
+
+            <!-- HUBBLE -->
+            <div class="satellite-card">
+                <div class="card-header">
+                    <span class="satellite-name">HUBBLE</span>
+                    <span class="orbit-badge">LEO</span>
+                </div>
+                
+                <div class="status-indicator">
+                    <div class="status-dot status-online"></div>
+                    <span style="color: #00ff00;">Online - Observatory</span>
+                </div>
+
+                <div class="satellite-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Altitude</div>
+                        <div class="detail-value">540 km</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Period</div>
+                        <div class="detail-value">95 min</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Inclination</div>
+                        <div class="detail-value">28.5°</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Launch</div>
+                        <div class="detail-value">1990</div>
+                    </div>
+                </div>
+
+                <div class="instruments">
+                    <span class="instrument-tag">WFC3</span>
+                    <span class="instrument-tag">ACS</span>
+                    <span class="instrument-tag">COS</span>
+                    <span class="instrument-tag">STIS</span>
+                </div>
+
+                <button class="telemetry-link">📡 VIEW TELEMETRY</button>
+            </div>
+
+            <!-- GAIA -->
+            <div class="satellite-card">
+                <div class="card-header">
+                    <span class="satellite-name">GAIA</span>
+                    <span class="orbit-badge">L2</span>
+                </div>
+                
+                <div class="status-indicator">
+                    <div class="status-dot status-online"></div>
+                    <span style="color: #00ff00;">Online - Astrometry</span>
+                </div>
+
+                <div class="satellite-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Orbit</div>
+                        <div class="detail-value">L2 Lissajous</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Distance</div>
+                        <div class="detail-value">1.5M km</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Period</div>
+                        <div class="detail-value">180 days</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Launch</div>
+                        <div class="detail-value">2013</div>
+                    </div>
+                </div>
+
+                <div class="instruments">
+                    <span class="instrument-tag">Astrometry</span>
+                    <span class="instrument-tag">Photometry</span>
+                    <span class="instrument-tag">Spectroscopy</span>
+                </div>
+
+                <button class="telemetry-link">📡 VIEW TELEMETRY</button>
+            </div>
+
+            <!-- TESS -->
+            <div class="satellite-card">
+                <div class="card-header">
+                    <span class="satellite-name">TESS</span>
+                    <span class="orbit-badge">HEO</span>
+                </div>
+                
+                <div class="status-indicator">
+                    <div class="status-dot status-online"></div>
+                    <span style="color: #00ff00;">Online - Exoplanet</span>
+                </div>
+
+                <div class="satellite-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Orbit</div>
+                        <div class="detail-value">P/2 HEO</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Period</div>
+                        <div class="detail-value">13.7 days</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Apoapsis</div>
+                        <div class="detail-value">373,000 km</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Launch</div>
+                        <div class="detail-value">2018</div>
+                    </div>
+                </div>
+
+                <div class="instruments">
+                    <span class="instrument-tag">CCD Cameras</span>
+                    <span class="instrument-tag">Photometer</span>
+                </div>
+
+                <button class="telemetry-link">📡 VIEW TELEMETRY</button>
+            </div>
+        </div>
+
+        <!-- Ground Stations Section -->
+        <div style="margin-top: 60px;">
+            <h2 style="color: white; text-align: center; margin-bottom: 30px;">🌍 GROUND STATIONS</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">12</div>
+                    <div class="stat-label">Active Stations</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Communication</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">100 Gbps</div>
+                    <div class="stat-label">Downlink</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">6</div>
+                    <div class="stat-label">Continents</div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

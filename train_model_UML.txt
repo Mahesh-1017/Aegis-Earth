@@ -1,0 +1,23 @@
+@startuml
+class ImpactModelTrainer {
+    generate_synthetic_data()
+    create_ensemble()
+    preprocess_data()
+    train()
+    evaluate()
+    cross_validate()
+    save_model()
+    load_model()
+    predict()
+    get_feature_importance()
+    main()
+        random_state
+    scaler
+    ensemble
+    ensemble
+    training_history
+    ensemble
+    scaler
+    __init__()
+}
+@enduml

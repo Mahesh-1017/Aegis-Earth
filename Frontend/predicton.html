@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aegis Earth - Advanced Impact Prediction</title>
+    <style>
+        /* Immediate background to prevent white flash */
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(ellipse at bottom, #030614 0%, #000000 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Ensure container has dark background immediately */
+        #earth-container {
+            width: 100%;
+            height: 600px;
+            border-radius: 24px;
+            overflow: hidden;
+            background: #000000;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: radial-gradient(ellipse at bottom, #030614 0%, #000000 100%);
+            overflow-x: hidden;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Animated stars background */
+        @keyframes moveStars {
+            from {
+                transform: translateY(0px);
+            }
+
+            to {
+                transform: translateY(-2000px);
+            }
+        }
+
+        .stars,
+        .twinkling {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            pointer-events: none;
+        }
+
+        .stars {
+            background: #000 url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUgY3g9IjEiIGN5PSIxIiByPSIxIiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg==') repeat;
+            z-index: 0;
+            animation: moveStars 200s linear infinite;
+            opacity: 0.5;
+        }
+
+        .twinkling {
+            background: transparent url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNCIgaGVpZ2h0PSI0IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUgY3g9IjIiIGN5PSIyIiByPSIxIiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC4zIi8+PC9zdmc+') repeat;
+            z-index: 1;
+            animation: moveStars 150s linear infinite;
+            opacity: 0.3;
+        }
+
+        /* Glass Header */
+        header {
+            background: rgba(10, 20, 40, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(65, 105, 225, 0.3);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+            text-shadow: 0 0 20px rgba(65, 105, 225, 0.5);
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #fff 0%, #4169E1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: all 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+            text-shadow: 0 0 30px rgba(65, 105, 225, 0.8);
+        }
+
+        nav {
+            display: flex;
+            gap: 15px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            padding: 10px 20px;
+            background: rgba(65, 105, 225, 0.15);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(65, 105, 225, 0.3);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        nav a:hover {
+            background: rgba(65, 105, 225, 0.3);
+            border-color: rgba(65, 105, 225, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        nav a.active {
+            background: rgba(65, 105, 225, 0.4);
+            border-color: #4169E1;
+            box-shadow: 0 0 20px rgba(65, 105, 225, 0.5);
+        }
+
+        main {
+            position: relative;
+            z-index: 2;
+            padding: 100px 30px 30px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-align: center;
+            background: linear-gradient(135deg, #ffffff 0%, #4169E1 50%, #ffffff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(65, 105, 225, 0.3);
+            letter-spacing: 3px;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 40px;
+            text-align: center;
+            max-width: 800px;
+            line-height: 1.6;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tab {
+            padding: 12px 30px;
+            border-radius: 30px;
+            cursor: pointer;
+            color: white;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            background: transparent;
+            border: none;
+            font-size: 16px;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #4169E1, #1E3A8A);
+            box-shadow: 0 5px 15px rgba(65, 105, 225, 0.4);
+        }
+
+        .tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .prediction-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            width: 100%;
+            max-width: 1600px;
+        }
+
+        .form-section {
+            flex: 1;
+            min-width: 400px;
+            max-width: 600px;
+        }
+
+        /* Glass card effect */
+        .glass-card {
+            background: rgba(20, 30, 50, 0.3);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(65, 105, 225, 0.3);
+            box-shadow: 0 20px 40px rgba(65, 105, 225, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 15px;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(65, 105, 225, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: white;
+            letter-spacing: 1px;
+        }
+
+        .card-subtitle {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            color: #4169E1;
+            font-size: 16px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 14px 20px 14px 45px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            color: white;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4169E1;
+            background: rgba(0, 0, 0, 0.6);
+            box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.2);
+        }
+
+        .form-group input:hover,
+        .form-group select:hover {
+            border-color: rgba(65, 105, 225, 0.5);
+        }
+
+        .hint {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 5px;
+            margin-left: 10px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #4169E1, #1E3A8A);
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(65, 105, 225, 0.5);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .visualization-section {
+            flex: 1.5;
+            min-width: 600px;
+        }
+
+        #earth-container {
+            width: 100%;
+            height: 600px;
+            border-radius: 24px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(0, 255, 0, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 255, 0, 0.2);
+            border-radius: 24px;
+            display: none;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .results h3 {
+            color: #00ff00;
+            margin-bottom: 20px;
+            font-size: 24px;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .result-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .result-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .result-value {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .confidence {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 5px;
+        }
+
+        /* Spacecraft Recommendations */
+        .spacecraft-recs {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(65, 105, 225, 0.15);
+            border: 1px solid rgba(65, 105, 225, 0.3);
+            border-radius: 20px;
+        }
+
+        .spacecraft-recs h4 {
+            color: #4169E1;
+            margin-bottom: 15px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .spacecraft-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .spacecraft-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 12px;
+            border-left: 4px solid #4169E1;
+            transition: all 0.3s ease;
+        }
+
+        .spacecraft-card:hover {
+            background: rgba(65, 105, 225, 0.1);
+            transform: translateX(5px);
+        }
+
+        .sc-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .sc-score {
+            color: #00ff88;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .sc-prob {
+            color: #ffaa00;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+
+        .sc-status {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .error {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(255, 0, 0, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 0, 0, 0.2);
+            border-radius: 16px;
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(65, 105, 225, 0.3);
+            border-top-color: #4169E1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .model-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            background: rgba(65, 105, 225, 0.2);
+            border: 1px solid rgba(65, 105, 225, 0.4);
+            border-radius: 30px;
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+
+        /* Loading indicator for textures */
+        .loading-indicator {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 18px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: 1px solid rgba(65, 105, 225, 0.3);
+            backdrop-filter: blur(5px);
+            z-index: 5;
+        }
+
+        /* Responsive design */
+        @media (max-width: 1200px) {
+            .prediction-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .form-section,
+            .visualization-section {
+                width: 100%;
+                max-width: 800px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+            }
+
+            nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            h1 {
+                font-size: 32px;
+            }
+
+            .tabs {
+                flex-direction: column;
+                border-radius: 20px;
+            }
+
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- OrbitControls -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+
+<body>
+    <div class="stars"></div>
+    <div class="twinkling"></div>
+
+    <header>
+        <a href="index.html" class="logo">⚡ AEGIS EARTH</a>
+        <nav>
+            <a href="aesteroids.html">🚀 ASTEROIDS</a>
+            <a href="spacecrafts.html">🛸 SPACE CRAFTS</a>
+            <a href="earth.html">🌍 EARTH</a>
+            <a href="sattilites.html">📡 SATELLITES</a>
+            <a href="predicton.html" class="active">🎯 PREDICTION</a>
+        </nav>
+    </header>
+
+    <main>
+        <h1>IMPACT PREDICTION SYSTEM</h1>
+        <p class="subtitle">Advanced AI-powered asteroid impact prediction using triple-modal fusion of NASA NEO data,
+            USGS terrain analysis, and spacecraft telemetry</p>
+
+        <div class="tabs">
+            <button class="tab active" onclick="setMode('simple')">⚡ Quick Prediction</button>
+            <button class="tab" onclick="setMode('advanced')">🔬 Advanced Analysis</button>
+        </div>
+
+        <div class="prediction-container">
+            <div class="form-section">
+                <!-- Simple Mode Form -->
+                <div id="simple-form" class="glass-card">
+                    <div class="card-header">
+                        <div class="card-icon">⚡</div>
+                        <div>
+                            <div class="card-title">Quick Impact Assessment</div>
+                            <div class="card-subtitle">Basic asteroid parameters with optimized defaults</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>🌑 Diameter (km)</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">📏</span>
+                            <input type="number" id="diameter" step="0.01" min="0.1" max="10.0" value="1.5"
+                                placeholder="Enter diameter">
+                        </div>
+                        <div class="hint">Range: 0.1 - 10.0 km</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>⚡ Velocity (km/s)</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">💫</span>
+                            <input type="number" id="velocity" step="0.01" min="5.0" max="70.0" value="25.0"
+                                placeholder="Enter velocity">
+                        </div>
+                        <div class="hint">Range: 5.0 - 70.0 km/s</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>🪨 Composition</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon">🔬</span>
+                            <select id="composition" onchange="updateAsteroidModel()">
+                                <option value="0">C-type (Carbonaceous)</option>
+                                <option value="1" selected>S-type (Silicaceous)</option>
+                                <option value="2">M-type (Metallic)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button class="submit-btn" onclick="predictSimple()">
+                        <span>🔮 PREDICT IMPACT</span>
+                    </button>
+                </div>
+
+                <!-- Advanced Mode Form -->
+                <div id="advanced-form" class="glass-card" style="display: none;">
+                    <div class="card-header">
+                        <div class="card-icon">🔬</div>
+                        <div>
+                            <div class="card-title">Advanced Triple-Modal Analysis</div>
+                            <div class="card-subtitle">Full NASA NEO + USGS + Telemetry integration</div>
+                        </div>
+                    </div>
+
+                    <div
+                        style="margin-bottom: 25px; padding: 10px; background: rgba(65, 105, 225, 0.1); border-radius: 12px;">
+                        <div style="display: flex; align-items: center; gap: 10px; color: #4169E1;">
+                            <span>🌍</span>
+                            <span style="font-weight: 600;">NASA NEO Astronomical Data</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📏 Diameter (km)</label>
+                        <input type="number" id="adv-diameter" step="0.01" min="0.1" max="10.0" value="1.5">
+                    </div>
+
+                    <div class="form-group">
+                        <label>💫 Velocity (km/s)</label>
+                        <input type="number" id="adv-velocity" step="0.01" min="5.0" max="70.0" value="25.0">
+                    </div>
+
+                    <div class="form-group">
+                        <label>🔄 Eccentricity</label>
+                        <input type="number" id="adv-eccentricity" step="0.01" min="0" max="1.0" value="0.5">
+                    </div>
+
+                    <div class="form-group">
+                        <label>📐 Inclination (deg)</label>
+                        <input type="number" id="adv-inclination" step="0.1" min="0" max="180" value="10.0">
+                    </div>
+
+                    <div class="form-group">
+                        <label>🪨 Composition</label>
+                        <select id="adv-composition" onchange="updateAsteroidModel()">
+                            <option value="C-type">C-type (Carbonaceous)</option>
+                            <option value="S-type" selected>S-type (Silicaceous)</option>
+                            <option value="M-type">M-type (Metallic)</option>
+                        </select>
+                    </div>
+
+                    <div
+                        style="margin: 25px 0 15px; padding: 10px; background: rgba(65, 105, 225, 0.1); border-radius: 12px;">
+                        <div style="display: flex; align-items: center; gap: 10px; color: #4169E1;">
+                            <span>🏔️</span>
+                            <span style="font-weight: 600;">USGS Terrain Analysis</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>⛰️ Soil Density (g/cm³)</label>
+                        <input type="number" id="soil-density" step="0.1" min="1.0" max="5.0" value="2.0">
+                    </div>
+
+                    <div class="form-group">
+                        <label>💧 Porosity</label>
+                        <input type="number" id="porosity" step="0.01" min="0" max="1.0" value="0.3">
+                    </div>
+
+                    <div class="form-group">
+                        <label>⛰️ Elevation (m)</label>
+                        <input type="number" id="elevation" step="10" min="-500" max="9000" value="1000">
+                    </div>
+
+                    <div class="form-group">
+                        <label>🌊 Water Depth (m)</label>
+                        <input type="number" id="water-depth" step="10" min="0" max="11000" value="0">
+                    </div>
+
+                    <div
+                        style="margin: 25px 0 15px; padding: 10px; background: rgba(65, 105, 225, 0.1); border-radius: 12px;">
+                        <div style="display: flex; align-items: center; gap: 10px; color: #4169E1;">
+                            <span>🛰️</span>
+                            <span style="font-weight: 600;">Spacecraft Telemetry</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>⚖️ Impactor Mass (kg)</label>
+                        <input type="number" id="impactor-mass" step="10" min="100" max="5000" value="750">
+                    </div>
+
+                    <div class="form-group">
+                        <label>💫 Intercept Velocity (km/s)</label>
+                        <input type="number" id="intercept-velocity" step="0.1" min="1" max="30" value="7.0">
+                    </div>
+
+                    <div class="form-group">
+                        <label>📊 Momentum Factor (β)</label>
+                        <input type="number" id="momentum-factor" step="0.1" min="0.1" max="10.0" value="3.0">
+                    </div>
+
+                    <button class="submit-btn" onclick="predictAdvanced()">
+                        <span>🔬 ANALYZE IMPACT</span>
+                    </button>
+                </div>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p style="color: rgba(255,255,255,0.7);">Processing prediction...</p>
+                </div>
+
+                <div class="results" id="results">
+                    <h3>📊 PREDICTION RESULTS</h3>
+                    <div class="model-badge" id="model-badge">Triple-Modal AI Active</div>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <div class="result-label">CRATER SIZE</div>
+                            <div class="result-value"><span id="crater"></span> km</div>
+                            <div class="confidence" id="crater-conf"></div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">SEISMIC MAGNITUDE</div>
+                            <div class="result-value"><span id="seismic"></span></div>
+                            <div class="confidence" id="seismic-conf"></div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">COMPOSITION</div>
+                            <div class="result-value" id="comp-result"></div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">TIMESTAMP</div>
+                            <div class="result-value" id="timestamp"></div>
+                        </div>
+                    </div>
+
+                    <!-- Spacecraft Recommendations Section -->
+                    <div class="spacecraft-recs" id="spacecraft-section" style="display: none;">
+                        <h4>🛸 Recommended Spacecraft <span style="font-size: 14px; opacity: 0.7;">(for NEO
+                                distraction/deflection)</span></h4>
+                        <div class="spacecraft-grid" id="spacecraft-grid"></div>
+                    </div>
+                </div>
+
+                <div class="error" id="error">
+                    <p id="error-message" style="color: #ff6b6b;"></p>
+                </div>
+            </div>
+
+            <div class="visualization-section">
+                <div id="earth-container">
+                    <div class="loading-indicator" id="loading-earth">Loading 3D Earth...</div>
+                </div>
+                <p style="color: rgba(255,255,255,0.4); font-size: 12px; text-align: center; margin-top: 10px;">
+                    Real-time 3D impact simulation • Drag to rotate • Scroll to zoom
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Three.js Scene Setup with high-quality Earth model
+        const container = document.getElementById('earth-container');
+        const loadingEl = document.getElementById('loading-earth');
+
+        // Scene setup
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x030614);
+        scene.fog = new THREE.Fog(0x030614, 30, 100);
+
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.set(0, 2, 18);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
+        container.innerHTML = ''; // Clear loading indicator
+        container.appendChild(renderer.domElement);
+
+        // Enhanced Lighting System
+        const ambientLight = new THREE.AmbientLight(0x404060, 0.6);
+        scene.add(ambientLight);
+
+        const sunLight = new THREE.DirectionalLight(0xffeedd, 1.5);
+        sunLight.position.set(10, 15, 10);
+        sunLight.castShadow = true;
+        sunLight.shadow.mapSize.width = 2048;
+        sunLight.shadow.mapSize.height = 2048;
+        const d = 15;
+        sunLight.shadow.camera.left = -d;
+        sunLight.shadow.camera.right = d;
+        sunLight.shadow.camera.top = d;
+        sunLight.shadow.camera.bottom = -d;
+        sunLight.shadow.camera.near = 1;
+        sunLight.shadow.camera.far = 25;
+        scene.add(sunLight);
+
+        const fillLight = new THREE.DirectionalLight(0x4466aa, 0.8);
+        fillLight.position.set(-10, 5, 10);
+        scene.add(fillLight);
+
+        const backLight = new THREE.PointLight(0x4466ff, 0.5);
+        backLight.position.set(0, 5, -15);
+        scene.add(backLight);
+        const existingHelpers = [];
+        scene.children.forEach(child => {
+            if (child.isGridHelper || child.isAxesHelper ||
+                (child.isMesh && child.geometry.type === 'PlaneGeometry')) {
+                existingHelpers.push(child);
+            }
+        });
+        existingHelpers.forEach(helper => scene.remove(helper));
+
+        // Starfield background
+        const starsGeometry = new THREE.BufferGeometry();
+        const starsCount = 2000;
+        const starPositions = new Float32Array(starsCount * 3);
+
+        for (let i = 0; i < starsCount; i++) {
+            const r = 80 + Math.random() * 50;
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos(2 * Math.random() - 1);
+
+            starPositions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+            starPositions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+            starPositions[i * 3 + 2] = r * Math.cos(phi);
+        }
+
+        starsGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+        const starsMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.1 });
+        const starsField = new THREE.Points(starsGeometry, starsMaterial);
+        scene.add(starsField);
+
+        // Create Earth Group
+        const earthGroup = new THREE.Group();
+
+        // Load Earth textures from Three.js examples (high quality)
+        const textureLoader = new THREE.TextureLoader();
+
+        // These are high-quality NASA-style textures
+        const earthMap = textureLoader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');
+        const earthSpecularMap = textureLoader.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg');
+        const earthNormalMap = textureLoader.load('https://threejs.org/examples/textures/planets/earth_normal_2048.jpg');
+        const cloudMap = textureLoader.load('https://threejs.org/examples/textures/planets/earth_clouds_1024.png');
+
+        // Earth material with realistic shading
+        const earthMaterial = new THREE.MeshPhongMaterial({
+            map: earthMap,
+            specularMap: earthSpecularMap,
+            specular: new THREE.Color('grey'),
+            shininess: 10,
+            normalMap: earthNormalMap,
+            normalScale: new THREE.Vector2(0.5, 0.5)
+        });
+
+        const earthGeometry = new THREE.SphereGeometry(5, 64, 64);
+        const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+        earth.castShadow = true;
+        earth.receiveShadow = true;
+        earthGroup.add(earth);
+
+        // Cloud layer with transparency
+        const cloudMaterial = new THREE.MeshPhongMaterial({
+            map: cloudMap,
+            transparent: true,
+            opacity: 0.3,
+            blending: THREE.AdditiveBlending,
+            side: THREE.DoubleSide,
+            depthWrite: false
+        });
+
+        const cloudGeometry = new THREE.SphereGeometry(5.02, 64, 64);
+        const clouds = new THREE.Mesh(cloudGeometry, cloudMaterial);
+        earthGroup.add(clouds);
+
+        // Atmosphere glow
+        const glowMaterial = new THREE.MeshPhongMaterial({
+            color: 0x4169E1,
+            emissive: 0x112244,
+            transparent: true,
+            opacity: 0.15,
+            side: THREE.BackSide
+        });
+
+        const glowGeometry = new THREE.SphereGeometry(5.3, 64, 64);
+        const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+        earthGroup.add(glow);
+
+        scene.add(earthGroup);
+
+        // ============ ASTEROID MODELS FOR DIFFERENT COMPOSITIONS ============
+
+        // Create container for asteroid
+        const asteroidGroup = new THREE.Group();
+        scene.add(asteroidGroup);
+
+        // Function to create C-type (Carbonaceous) asteroid - dark, rough, porous
+        function createCTypeAsteroid() {
+            const group = new THREE.Group();
+
+            // Main body - dark gray/black, irregular
+            const mainGeo = new THREE.SphereGeometry(0.8, 24, 24);
+            const mainMat = new THREE.MeshPhongMaterial({
+                color: 0x333333,
+                emissive: 0x111111,
+                shininess: 5,
+                flatShading: true
+            });
+            const main = new THREE.Mesh(mainGeo, mainMat);
+            group.add(main);
+
+            // Add many small bumps for porous look
+            for (let i = 0; i < 30; i++) {
+                const bumpGeo = new THREE.SphereGeometry(0.1 + Math.random() * 0.2, 5);
+                const bumpMat = new THREE.MeshPhongMaterial({
+                    color: 0x444444,
+                    emissive: 0x111111
+                });
+                const bump = new THREE.Mesh(bumpGeo, bumpMat);
+                bump.position.set(
+                    (Math.random() - 0.5) * 1.3,
+                    (Math.random() - 0.5) * 1.3,
+                    (Math.random() - 0.5) * 1.3
+                );
+                group.add(bump);
+            }
+
+            // Add dark craters
+            for (let i = 0; i < 15; i++) {
+                const craterGeo = new THREE.SphereGeometry(0.15, 6);
+                const craterMat = new THREE.MeshPhongMaterial({
+                    color: 0x222222,
+                    emissive: 0x000000
+                });
+                const crater = new THREE.Mesh(craterGeo, craterMat);
+                crater.position.set(
+                    (Math.random() - 0.5) * 1.1,
+                    (Math.random() - 0.5) * 1.1,
+                    (Math.random() - 0.5) * 1.1
+                );
+                group.add(crater);
+            }
+
+            return group;
+        }
+
+        // Function to create S-type (Silicaceous) asteroid - rocky, stony, lighter
+        function createSTypeAsteroid() {
+            const group = new THREE.Group();
+
+            // Main body - rocky gray/brown
+            const mainGeo = new THREE.SphereGeometry(0.8, 24, 24);
+            const mainMat = new THREE.MeshPhongMaterial({
+                color: 0x8B6B4D,
+                emissive: 0x221100,
+                shininess: 15
+            });
+            const main = new THREE.Mesh(mainGeo, mainMat);
+            group.add(main);
+
+            // Add rocky bumps
+            for (let i = 0; i < 20; i++) {
+                const bumpGeo = new THREE.SphereGeometry(0.12 + Math.random() * 0.18, 6);
+                const bumpMat = new THREE.MeshPhongMaterial({
+                    color: 0x6B4D3A,
+                    emissive: 0x110800
+                });
+                const bump = new THREE.Mesh(bumpGeo, bumpMat);
+                bump.position.set(
+                    (Math.random() - 0.5) * 1.2,
+                    (Math.random() - 0.5) * 1.2,
+                    (Math.random() - 0.5) * 1.2
+                );
+                group.add(bump);
+            }
+
+            // Add craters
+            for (let i = 0; i < 10; i++) {
+                const craterGeo = new THREE.SphereGeometry(0.18, 6);
+                const craterMat = new THREE.MeshPhongMaterial({
+                    color: 0x4D3A2A,
+                    emissive: 0x110800
+                });
+                const crater = new THREE.Mesh(craterGeo, craterMat);
+                crater.position.set(
+                    (Math.random() - 0.5) * 1.0,
+                    (Math.random() - 0.5) * 1.0,
+                    (Math.random() - 0.5) * 1.0
+                );
+                group.add(crater);
+            }
+
+            return group;
+        }
+
+        // Function to create M-type (Metallic) asteroid - shiny, metallic, dense
+        function createMTypeAsteroid() {
+            const group = new THREE.Group();
+
+            // Main body - metallic gray with shine
+            const mainGeo = new THREE.SphereGeometry(0.8, 32, 32);
+            const mainMat = new THREE.MeshPhongMaterial({
+                color: 0xAAAAAA,
+                emissive: 0x222222,
+                specular: 0x555555,
+                shininess: 80,
+                flatShading: false
+            });
+            const main = new THREE.Mesh(mainGeo, mainMat);
+            group.add(main);
+
+            // Add metallic bumps
+            for (let i = 0; i < 15; i++) {
+                const bumpGeo = new THREE.SphereGeometry(0.1 + Math.random() * 0.15, 8);
+                const bumpMat = new THREE.MeshPhongMaterial({
+                    color: 0x999999,
+                    emissive: 0x222222,
+                    specular: 0x666666,
+                    shininess: 60
+                });
+                const bump = new THREE.Mesh(bumpGeo, bumpMat);
+                bump.position.set(
+                    (Math.random() - 0.5) * 1.1,
+                    (Math.random() - 0.5) * 1.1,
+                    (Math.random() - 0.5) * 1.1
+                );
+                group.add(bump);
+            }
+
+            // Add shiny craters
+            for (let i = 0; i < 8; i++) {
+                const craterGeo = new THREE.SphereGeometry(0.16, 8);
+                const craterMat = new THREE.MeshPhongMaterial({
+                    color: 0x888888,
+                    emissive: 0x222222,
+                    specular: 0x444444,
+                    shininess: 50
+                });
+                const crater = new THREE.Mesh(craterGeo, craterMat);
+                crater.position.set(
+                    (Math.random() - 0.5) * 0.9,
+                    (Math.random() - 0.5) * 0.9,
+                    (Math.random() - 0.5) * 0.9
+                );
+                group.add(crater);
+            }
+
+            return group;
+        }
+
+        // Store current asteroid model
+        let currentAsteroidModel = createSTypeAsteroid();
+        asteroidGroup.add(currentAsteroidModel);
+        asteroidGroup.position.set(20, 0, 2);
+
+        // Function to update asteroid model based on composition
+        function updateAsteroidModel() {
+            // Get composition from either simple or advanced mode
+            let composition;
+            if (document.getElementById('simple-form').style.display !== 'none') {
+                composition = parseInt(document.getElementById('composition').value);
+            } else {
+                composition = document.getElementById('adv-composition').value;
+            }
+
+            // Remove current model
+            while (asteroidGroup.children.length > 0) {
+                asteroidGroup.remove(asteroidGroup.children[0]);
+            }
+
+            // Add new model based on composition
+            if (composition === 0 || composition === 'C-type') {
+                currentAsteroidModel = createCTypeAsteroid();
+                console.log("Switched to C-type asteroid");
+            } else if (composition === 1 || composition === 'S-type') {
+                currentAsteroidModel = createSTypeAsteroid();
+                console.log("Switched to S-type asteroid");
+            } else if (composition === 2 || composition === 'M-type') {
+                currentAsteroidModel = createMTypeAsteroid();
+                console.log("Switched to M-type asteroid");
+            }
+
+            asteroidGroup.add(currentAsteroidModel);
+        }
+
+        // ============ EARTH DESTRUCTION EFFECTS ============
+
+        // Fire particles (for realistic fire effect)
+        const fireParticles = [];
+        const fireColors = [0xff3300, 0xff5500, 0xff7700, 0xff9900, 0xffaa00, 0xff4400];
+
+        for (let i = 0; i < 400; i++) {
+            const particleGeo = new THREE.SphereGeometry(0.05 + Math.random() * 0.15, 4);
+            const color = fireColors[Math.floor(Math.random() * fireColors.length)];
+            const particleMat = new THREE.MeshPhongMaterial({
+                color: color,
+                emissive: 0x442200,
+                transparent: true,
+                blending: THREE.AdditiveBlending
+            });
+            const particle = new THREE.Mesh(particleGeo, particleMat);
+            particle.visible = false;
+            fireParticles.push(particle);
+            scene.add(particle);
+        }
+
+        // Smoke particles (dark, rising)
+        const smokeParticles = [];
+        for (let i = 0; i < 300; i++) {
+            const particleGeo = new THREE.SphereGeometry(0.1 + Math.random() * 0.3, 6);
+            const particleMat = new THREE.MeshPhongMaterial({
+                color: 0x333333,
+                emissive: 0x111111,
+                transparent: true,
+                opacity: 0.5,
+                blending: THREE.NormalBlending
+            });
+            const particle = new THREE.Mesh(particleGeo, particleMat);
+            particle.visible = false;
+            smokeParticles.push(particle);
+            scene.add(particle);
+        }
+
+        // Debris particles
+        const debrisParticles = [];
+        for (let i = 0; i < 200; i++) {
+            const particleGeo = new THREE.DodecahedronGeometry(0.05 + Math.random() * 0.12);
+            const particleMat = new THREE.MeshPhongMaterial({
+                color: 0x8B4513,
+                emissive: 0x331100
+            });
+            const particle = new THREE.Mesh(particleGeo, particleMat);
+            particle.visible = false;
+            debrisParticles.push(particle);
+            scene.add(particle);
+        }
+
+        // Impact crater with molten core
+        const craterGeo = new THREE.SphereGeometry(1.4, 32);
+        const craterMat = new THREE.MeshPhongMaterial({
+            color: 0x331100,
+            emissive: 0x220800,
+            transparent: true,
+            opacity: 0.9
+        });
+        const crater = new THREE.Mesh(craterGeo, craterMat);
+        crater.visible = false;
+        scene.add(crater);
+
+        // Molten core (bright orange)
+        const moltenGeo = new THREE.SphereGeometry(1.0, 32);
+        const moltenMat = new THREE.MeshPhongMaterial({
+            color: 0xff5500,
+            emissive: 0xaa3300,
+            transparent: true,
+            opacity: 0.9,
+            blending: THREE.AdditiveBlending
+        });
+        const molten = new THREE.Mesh(moltenGeo, moltenMat);
+        molten.visible = false;
+        scene.add(molten);
+
+        // Ejecta blanket
+        const ejectaGeo = new THREE.TorusGeometry(1.9, 0.2, 16, 64);
+        const ejectaMat = new THREE.MeshPhongMaterial({
+            color: 0x664422,
+            emissive: 0x221100,
+            transparent: true,
+            opacity: 0.5
+        });
+        const ejecta = new THREE.Mesh(ejectaGeo, ejectaMat);
+        ejecta.rotation.x = Math.PI / 2;
+        ejecta.visible = false;
+        scene.add(ejecta);
+
+        // Shockwaves
+        const shockwaveGeo = new THREE.TorusGeometry(1.5, 0.1, 32, 64);
+        const shockwaveMat = new THREE.MeshPhongMaterial({
+            color: 0xff5500,
+            emissive: 0x441100,
+            transparent: true,
+            opacity: 0.8,
+            side: THREE.DoubleSide,
+            blending: THREE.AdditiveBlending
+        });
+        const shockwave = new THREE.Mesh(shockwaveGeo, shockwaveMat);
+        shockwave.rotation.x = Math.PI / 2;
+        shockwave.visible = false;
+        scene.add(shockwave);
+
+        const shockwave2Geo = new THREE.TorusGeometry(2.2, 0.08, 32, 64);
+        const shockwave2Mat = new THREE.MeshPhongMaterial({
+            color: 0xffaa00,
+            emissive: 0x332200,
+            transparent: true,
+            opacity: 0.6,
+            side: THREE.DoubleSide,
+            blending: THREE.AdditiveBlending
+        });
+        const shockwave2 = new THREE.Mesh(shockwave2Geo, shockwave2Mat);
+        shockwave2.rotation.x = Math.PI / 2;
+        shockwave2.visible = false;
+        scene.add(shockwave2);
+
+        // Fire ring
+        const fireRingGeo = new THREE.TorusGeometry(1.2, 0.15, 16, 64);
+        const fireRingMat = new THREE.MeshPhongMaterial({
+            color: 0xff4400,
+            emissive: 0xaa2200,
+            transparent: true,
+            opacity: 0.7,
+            side: THREE.DoubleSide,
+            blending: THREE.AdditiveBlending
+        });
+        const fireRing = new THREE.Mesh(fireRingGeo, fireRingMat);
+        fireRing.rotation.x = Math.PI / 2;
+        fireRing.rotation.z = 0.3;
+        fireRing.visible = false;
+        scene.add(fireRing);
+
+        // Dust cloud
+        const dustGeo = new THREE.SphereGeometry(2.5, 32);
+        const dustMat = new THREE.MeshPhongMaterial({
+            color: 0x886644,
+            emissive: 0x221100,
+            transparent: true,
+            opacity: 0.3,
+            side: THREE.DoubleSide
+        });
+        const dust = new THREE.Mesh(dustGeo, dustMat);
+        dust.visible = false;
+        scene.add(dust);
+
+        // Trail particles
+        const trailParticles = [];
+        for (let i = 0; i < 30; i++) {
+            const trailGeo = new THREE.SphereGeometry(0.06, 6);
+            const trailMat = new THREE.MeshPhongMaterial({
+                color: 0xffaa44,
+                emissive: 0x442200,
+                transparent: true
+            });
+            const trail = new THREE.Mesh(trailGeo, trailMat);
+            trail.visible = false;
+            trailParticles.push(trail);
+            scene.add(trail);
+        }
+
+        // Store particle velocities
+        const particleVelocities = [];
+
+        // Controls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.5;
+        controls.enableZoom = true;
+        controls.maxPolarAngle = Math.PI / 2;
+        controls.minDistance = 8;
+        controls.maxDistance = 30;
+
+        // Animation variables
+        let isAnimating = false;
+        let collisionOccurred = false;
+        let trailPositions = [];
+        let explosionActive = false;
+        let explosionTime = 0;
+        let shockwaveScale = 1;
+        let dustScale = 1;
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Earth rotation
+            if (!collisionOccurred) {
+                earthGroup.rotation.y += 0.001;
+                clouds.rotation.y += 0.0012;
+            } else {
+                earthGroup.rotation.y += 0.0001; // Slow rotation after impact
+                clouds.rotation.y += 0.0001;
+            }
+
+            // Stars rotation
+            starsField.rotation.y += 0.0001;
+
+            // Asteroid rotation
+            if (!collisionOccurred) {
+                asteroidGroup.rotation.x += 0.005;
+                asteroidGroup.rotation.y += 0.008;
+                asteroidGroup.rotation.z += 0.003;
+            }
+
+            if (isAnimating && !collisionOccurred) {
+                // Move asteroid towards Earth
+                asteroidGroup.position.x -= 0.03;
+                asteroidGroup.position.y += Math.sin(Date.now() * 0.003) * 0.02;
+                asteroidGroup.position.z += Math.cos(Date.now() * 0.002) * 0.01;
+
+                // Update trail
+                const pos = asteroidGroup.position.clone();
+                trailPositions.unshift(pos);
+                if (trailPositions.length > 30) trailPositions.pop();
+
+                trailParticles.forEach((part, index) => {
+                    if (index < trailPositions.length) {
+                        part.position.copy(trailPositions[index]);
+                        part.visible = true;
+                        part.material.opacity = 0.6 * (1 - index / trailPositions.length);
+                    } else {
+                        part.visible = false;
+                    }
+                });
+
+                // Check for collision
+                if (asteroidGroup.position.x < 5.8 && !collisionOccurred) {
+                    collisionOccurred = true;
+                    explosionActive = true;
+                    explosionTime = 0;
+
+                    // Position at impact point
+                    const impactPos = new THREE.Vector3(5.2, 0, 0);
+
+                    // Position asteroid at impact point (stays embedded)
+                    asteroidGroup.position.copy(impactPos);
+
+                    // Position all destruction effects
+                    crater.position.copy(impactPos);
+                    crater.visible = true;
+
+                    molten.position.copy(impactPos);
+                    molten.visible = true;
+
+                    ejecta.position.copy(impactPos);
+                    ejecta.visible = true;
+
+                    shockwave.position.copy(impactPos);
+                    shockwave.visible = true;
+
+                    shockwave2.position.copy(impactPos);
+                    shockwave2.visible = true;
+
+                    fireRing.position.copy(impactPos);
+                    fireRing.visible = true;
+
+                    dust.position.copy(impactPos);
+                    dust.visible = true;
+
+                    shockwaveScale = 1;
+                    dustScale = 1;
+
+                    // Trigger fire particles
+                    for (let i = 0; i < fireParticles.length; i++) {
+                        const p = fireParticles[i];
+                        const angle1 = Math.random() * Math.PI * 2;
+                        const angle2 = Math.random() * Math.PI * 2;
+                        const radius = 1.5 + Math.random() * 4;
+                        p.position.set(
+                            impactPos.x + Math.sin(angle1) * Math.cos(angle2) * radius,
+                            Math.sin(angle2) * radius,
+                            Math.cos(angle1) * Math.cos(angle2) * radius
+                        );
+                        p.visible = true;
+                        p.material.opacity = 1;
+
+                        particleVelocities[i] = {
+                            x: (Math.random() - 0.5) * 0.04,
+                            y: (Math.random() - 0.5) * 0.04 + 0.02, // upward bias
+                            z: (Math.random() - 0.5) * 0.04
+                        };
+                    }
+
+                    // Trigger smoke particles
+                    for (let i = 0; i < smokeParticles.length; i++) {
+                        const p = smokeParticles[i];
+                        const angle1 = Math.random() * Math.PI * 2;
+                        const angle2 = Math.random() * Math.PI * 2;
+                        const radius = 2 + Math.random() * 5;
+                        p.position.set(
+                            impactPos.x + Math.sin(angle1) * Math.cos(angle2) * radius,
+                            Math.sin(angle2) * radius + 1,
+                            Math.cos(angle1) * Math.cos(angle2) * radius
+                        );
+                        p.visible = true;
+                        p.material.opacity = 0.6;
+                    }
+
+                    // Trigger debris particles
+                    for (let i = 0; i < debrisParticles.length; i++) {
+                        const p = debrisParticles[i];
+                        const angle1 = Math.random() * Math.PI * 2;
+                        const angle2 = Math.random() * Math.PI * 2;
+                        const radius = 1.8 + Math.random() * 3;
+                        p.position.set(
+                            impactPos.x + Math.sin(angle1) * Math.cos(angle2) * radius,
+                            Math.sin(angle2) * radius,
+                            Math.cos(angle1) * Math.cos(angle2) * radius
+                        );
+                        p.visible = true;
+                        p.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+                    }
+
+                    // Hide trail
+                    trailParticles.forEach(p => p.visible = false);
+                }
+            }
+
+            // Animate destruction effects
+            if (explosionActive) {
+                explosionTime += 0.016;
+
+                // --- INTENSE INITIAL FLASH (First 0.5 seconds) ---
+                if (explosionTime < 0.5) {
+                    // Create a bright, white flash by scaling up the molten core and adding a temporary bright sphere
+                    const flashIntensity = 1 + (0.5 - explosionTime) * 10; // Fades quickly
+                    molten.scale.set(3.0 * flashIntensity, 3.0 * flashIntensity, 3.0 * flashIntensity);
+                    molten.material.color.setHex(0xffffff); // Turn white
+                    molten.material.emissive.setHex(0xaaaaaa);
+                    molten.material.opacity = 0.9 * flashIntensity;
+
+                    // Also make the fire ring bright white and huge
+                    fireRing.scale.set(4.0 * flashIntensity, 4.0 * flashIntensity, 4.0 * flashIntensity);
+                    fireRing.material.color.setHex(0xffffff);
+                    fireRing.material.emissive.setHex(0x888888);
+                    fireRing.material.opacity = 0.8 * flashIntensity;
+
+                    // Expand shockwaves very fast initially
+                    shockwaveScale += 0.15;
+                    shockwave.scale.set(shockwaveScale, shockwaveScale, shockwaveScale);
+                    shockwave.material.color.setHex(0xffffff);
+                    shockwave.material.opacity = 1.0 * (1 - explosionTime * 2);
+
+                    shockwave2.scale.set(shockwaveScale * 1.3, shockwaveScale * 1.3, shockwaveScale * 1.3);
+                    shockwave2.material.color.setHex(0xffaa00);
+                    shockwave2.material.opacity = 0.8 * (1 - explosionTime * 2);
+
+                } else {
+                    // --- AFTER THE FLASH: Return to normal colors and let effects fade ---
+
+                    // Molten core returns to orange and shrinks to crater size
+                    molten.material.color.setHex(0xff5500);
+                    molten.material.emissive.setHex(0xaa3300);
+                    molten.scale.set(
+                        1 + Math.sin(explosionTime * 15) * 0.15,
+                        1 + Math.sin(explosionTime * 15) * 0.15,
+                        1 + Math.sin(explosionTime * 15) * 0.15
+                    );
+                    molten.material.opacity = 0.9 * (1 - (explosionTime - 0.5) / 9.5);
+
+                    // Fire ring returns to orange and fades
+                    fireRing.material.color.setHex(0xff4400);
+                    fireRing.material.emissive.setHex(0xaa2200);
+                    fireRing.rotation.y += 0.03;
+                    fireRing.rotation.z += 0.01;
+                    fireRing.material.opacity = 0.7 * (1 - (explosionTime - 0.5) / 5.5);
+
+                    if (explosionTime > 6) {
+                        fireRing.visible = false;
+                    }
+
+                    // Shockwaves continue expanding but slower
+                    if (shockwave.visible) {
+                        shockwaveScale += 0.04;
+                        shockwave.scale.set(shockwaveScale, shockwaveScale, shockwaveScale);
+                        shockwave.material.color.setHex(0xff5500);
+                        shockwave.material.opacity = 0.8 * (1 - explosionTime / 5);
+
+                        shockwave2.scale.set(shockwaveScale * 1.4, shockwaveScale * 1.4, shockwaveScale * 1.4);
+                        shockwave2.material.opacity = 0.6 * (1 - explosionTime / 5);
+
+                        if (explosionTime > 5) {
+                            shockwave.visible = false;
+                            shockwave2.visible = false;
+                        }
+                    }
+                }
+
+                // --- ANIMATE FIRE PARTICLES (Always active) ---
+                fireParticles.forEach((p, index) => {
+                    if (particleVelocities[index]) {
+                        // During the initial flash, particles move faster
+                        if (explosionTime < 0.5) {
+                            p.position.x += particleVelocities[index].x * 3;
+                            p.position.y += particleVelocities[index].y * 3;
+                            p.position.z += particleVelocities[index].z * 3;
+                            p.material.color.setHex(0xffffff); // Turn white during flash
+                        } else {
+                            p.position.x += particleVelocities[index].x;
+                            p.position.y += particleVelocities[index].y;
+                            p.position.z += particleVelocities[index].z;
+                            p.material.color.setHex(fireColors[index % fireColors.length]); // Back to normal
+                        }
+
+                        // Add gravity and drag
+                        particleVelocities[index].y -= 0.0003;
+                        particleVelocities[index].x *= 0.99;
+                        particleVelocities[index].z *= 0.99;
+                    }
+                    p.material.opacity *= 0.99;
+
+                    if (p.material.opacity < 0.05) {
+                        p.visible = false;
+                    }
+                });
+
+                // --- EXPAND DUST CLOUD (Becomes visible after the flash) ---
+                if (dust.visible && explosionTime > 0.3) {
+                    dustScale += 0.03;
+                    dust.scale.set(dustScale, dustScale, dustScale);
+                    dust.material.opacity = 0.4 * (1 - explosionTime / 8);
+
+                    if (explosionTime > 8) {
+                        dust.visible = false;
+                    }
+                }
+
+                // Animate smoke particles
+                smokeParticles.forEach(p => {
+                    p.position.y += 0.015;
+                    p.material.opacity *= 0.995;
+                    p.scale.set(1.03, 1.03, 1.03);
+
+                    if (p.material.opacity < 0.1) {
+                        p.visible = false;
+                    }
+                });
+
+                // Animate debris
+                debrisParticles.forEach(p => {
+                    p.position.y -= 0.008;
+                    p.rotation.x += 0.03;
+                    p.rotation.y += 0.04;
+                    p.rotation.z += 0.02;
+
+                    if (p.position.y < -2) {
+                        p.visible = false;
+                    }
+                });
+            }
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        // Mode switching
+        function setMode(mode) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (mode === 'simple') {
+                document.getElementById('simple-form').style.display = 'block';
+                document.getElementById('advanced-form').style.display = 'none';
+            } else {
+                document.getElementById('simple-form').style.display = 'none';
+                document.getElementById('advanced-form').style.display = 'block';
+            }
+        }
+
+        // Simple prediction
+        async function predictSimple() {
+            const diameter = parseFloat(document.getElementById('diameter').value);
+            const velocity = parseFloat(document.getElementById('velocity').value);
+            const composition = parseInt(document.getElementById('composition').value);
+
+            if (diameter < 0.1 || diameter > 10) {
+                showError('Diameter must be between 0.1 and 10.0 km');
+                return;
+            }
+            if (velocity < 5 || velocity > 70) {
+                showError('Velocity must be between 5.0 and 70.0 km/s');
+                return;
+            }
+
+            await makePrediction('/predict', {
+                diameter: diameter,
+                velocity: velocity,
+                composition: composition
+            });
+        }
+
+        // Advanced prediction
+        async function predictAdvanced() {
+            const data = {
+                nasa: {
+                    diameter: parseFloat(document.getElementById('adv-diameter').value),
+                    velocity: parseFloat(document.getElementById('adv-velocity').value),
+                    eccentricity: parseFloat(document.getElementById('adv-eccentricity').value),
+                    inclination: parseFloat(document.getElementById('adv-inclination').value),
+                    composition: document.getElementById('adv-composition').value
+                },
+                usgs: {
+                    soil_density: parseFloat(document.getElementById('soil-density').value),
+                    porosity: parseFloat(document.getElementById('porosity').value),
+                    elevation: parseFloat(document.getElementById('elevation').value),
+                    water_depth: parseFloat(document.getElementById('water-depth').value)
+                },
+                telemetry: {
+                    impactor_mass: parseFloat(document.getElementById('impactor-mass').value),
+                    intercept_velocity: parseFloat(document.getElementById('intercept-velocity').value),
+                    momentum_factor: parseFloat(document.getElementById('momentum-factor').value)
+                }
+            };
+
+            await makePrediction('/predict/full', data);
+        }
+
+        async function makePrediction(endpoint, data) {
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+
+            resetVisualization();
+
+            try {
+                const response = await fetch(`http://localhost:8000${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                document.getElementById('loading').style.display = 'none';
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                document.getElementById('crater').textContent = result.crater_km.toFixed(2);
+                document.getElementById('seismic').textContent = result.seismic_mag.toFixed(2);
+                document.getElementById('comp-result').textContent = result.composition_type;
+                document.getElementById('timestamp').textContent = new Date(result.timestamp).toLocaleString();
+
+                if (result.confidence_interval) {
+                    document.getElementById('crater-conf').textContent =
+                        `±${((result.confidence_interval.crater_km[1] - result.confidence_interval.crater_km[0]) / 2).toFixed(2)} km`;
+                    document.getElementById('seismic-conf').textContent =
+                        `±${((result.confidence_interval.seismic_mag[1] - result.confidence_interval.seismic_mag[0]) / 2).toFixed(2)}`;
+                }
+
+                document.getElementById('model-badge').textContent =
+                    result.model_type === 'triple-modal' ? '🚀 Triple-Modal AI Active' : '📊 Standard AI Active';
+
+                // Display spacecraft recommendations
+                if (result.recommended_spacecraft && result.recommended_spacecraft.length > 0) {
+                    const grid = document.getElementById('spacecraft-grid');
+                    grid.innerHTML = '';
+                    result.recommended_spacecraft.forEach((sc, index) => {
+                        const card = document.createElement('div');
+                        card.className = 'spacecraft-card';
+                        card.innerHTML = `
+                            <div class="sc-name">${sc.name} ${sc.status}</div>
+                            <div class="sc-score">Match: ${(sc.match_score * 100).toFixed(0)}%</div>
+                            <div class="sc-prob">Success: ${(sc.success_probability * 100).toFixed(0)}%</div>
+                            <div class="sc-status">${sc.best_for}</div>
+                        `;
+                        grid.appendChild(card);
+                    });
+                    document.getElementById('spacecraft-section').style.display = 'block';
+                }
+
+                document.getElementById('results').style.display = 'block';
+                startAnimation();
+
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                console.error('Error:', error);
+                document.getElementById('error-message').textContent =
+                    error.message || 'Failed to get prediction. Ensure the backend is running on port 8000.';
+                document.getElementById('error').style.display = 'block';
+            }
+        }
+
+        function resetVisualization() {
+            asteroidGroup.position.set(20, 0, 2);
+            asteroidGroup.visible = true;
+
+            // Hide all destruction effects
+            crater.visible = false;
+            molten.visible = false;
+            ejecta.visible = false;
+            shockwave.visible = false;
+            shockwave2.visible = false;
+            fireRing.visible = false;
+            dust.visible = false;
+
+            fireParticles.forEach(p => {
+                p.visible = false;
+                p.material.opacity = 1;
+            });
+
+            smokeParticles.forEach(p => {
+                p.visible = false;
+                p.material.opacity = 0.5;
+                p.scale.set(1, 1, 1);
+            });
+
+            debrisParticles.forEach(p => {
+                p.visible = false;
+            });
+
+            trailParticles.forEach(p => p.visible = false);
+            trailPositions = [];
+
+            collisionOccurred = false;
+            explosionActive = false;
+            explosionTime = 0;
+            isAnimating = false;
+
+            particleVelocities.length = 0;
+        }
+
+        function startAnimation() {
+            resetVisualization();
+            isAnimating = true;
+        }
+
+        function showError(message) {
+            document.getElementById('error-message').textContent = message;
+            document.getElementById('error').style.display = 'block';
+        }
+
+        // Check backend health
+        async function checkBackend() {
+            try {
+                const response = await fetch('http://localhost:8000/health');
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Backend connected:', data);
+                }
+            } catch (error) {
+                console.warn('Backend not reachable');
+            }
+        }
+
+        checkBackend();
+    </script>
+</body>
+
+</html>

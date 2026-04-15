@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aegis Earth - Asteroid Database</title>
+    <style>
+    /* Immediate background to prevent white flash */
+    html, body {
+        margin: 0;
+        padding: 0;
+        background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+        min-height: 100vh;
+    }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+            overflow-x: hidden;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Animated stars background */
+        @keyframes moveStars {
+            from { transform: translateY(0px); }
+            to { transform: translateY(-2000px); }
+        }
+
+        .stars, .twinkling {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            pointer-events: none;
+        }
+
+        .stars {
+            background: #000 url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMiIgaGVpZ2h0PSIyIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUgY3g9IjEiIGN5PSIxIiByPSIxIiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg==') repeat;
+            z-index: 0;
+            animation: moveStars 200s linear infinite;
+            opacity: 0.5;
+        }
+
+        .twinkling {
+            background: transparent url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNCIgaGVpZ2h0PSI0IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUgY3g9IjIiIGN5PSIyIiByPSIxIiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC4zIi8+PC9zdmc+') repeat;
+            z-index: 1;
+            animation: moveStars 150s linear infinite;
+            opacity: 0.3;
+        }
+
+        /* Glass Header */
+        header {
+            background: rgba(10, 20, 40, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(65, 105, 225, 0.3);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+            text-shadow: 0 0 20px rgba(65, 105, 225, 0.5);
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #fff 0%, #4169E1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: all 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+            text-shadow: 0 0 30px rgba(65, 105, 225, 0.8);
+        }
+
+        nav {
+            display: flex;
+            gap: 15px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            padding: 10px 20px;
+            background: rgba(65, 105, 225, 0.15);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(65, 105, 225, 0.3);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        nav a:hover {
+            background: rgba(65, 105, 225, 0.3);
+            border-color: rgba(65, 105, 225, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        nav a.active {
+            background: rgba(65, 105, 225, 0.4);
+            border-color: #4169E1;
+            box-shadow: 0 0 20px rgba(65, 105, 225, 0.5);
+        }
+
+        main {
+            position: relative;
+            z-index: 2;
+            padding: 100px 30px 30px;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        h1 {
+            font-size: 56px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ffffff 0%, #4169E1 50%, #ffffff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(65, 105, 225, 0.3);
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.7);
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+            animation: fadeInUp 0.8s ease 0.2s both;
+        }
+
+        .stat-card {
+            background: rgba(20, 30, 50, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(65, 105, 225, 0.3);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 30px rgba(65, 105, 225, 0.2);
+        }
+
+        .stat-value {
+            font-size: 42px;
+            font-weight: bold;
+            color: #4169E1;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Asteroid Grid */
+        .asteroid-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .asteroid-card {
+            background: rgba(20, 30, 50, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .asteroid-card:hover {
+            border-color: rgba(65, 105, 225, 0.4);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 30px rgba(65, 105, 225, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .asteroid-name {
+            font-size: 24px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .hazard-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .hazard-high {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            color: #ff6b6b;
+        }
+
+        .hazard-low {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.2);
+            color: #6bff6b;
+        }
+
+        .hazard-medium {
+            background: rgba(255, 165, 0, 0.15);
+            border: 1px solid rgba(255, 165, 0, 0.3);
+            color: #ffb347;
+        }
+
+        .asteroid-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .detail-item {
+            text-align: center;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .detail-unit {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-left: 2px;
+        }
+
+        .composition-tag {
+            display: inline-block;
+            padding: 8px 16px;
+            background: rgba(65, 105, 225, 0.15);
+            border: 1px solid rgba(65, 105, 225, 0.3);
+            border-radius: 20px;
+            font-size: 14px;
+            color: #4169E1;
+        }
+
+        .view-details {
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            background: rgba(65, 105, 225, 0.2);
+            border: 1px solid rgba(65, 105, 225, 0.3);
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .view-details:hover {
+            background: rgba(65, 105, 225, 0.4);
+            border-color: #4169E1;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 10px 25px;
+            background: rgba(20, 30, 50, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .filter-btn:hover {
+            background: rgba(65, 105, 225, 0.3);
+            border-color: #4169E1;
+        }
+
+        .filter-btn.active {
+            background: #4169E1;
+            border-color: #4169E1;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+            }
+            
+            nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            h1 {
+                font-size: 36px;
+            }
+            
+            .asteroid-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars"></div>
+    <div class="twinkling"></div>
+
+    <header>
+        <a href="index.html" class="logo">⚡ AEGIS EARTH</a>
+        <nav>
+            <a href="aesteroids.html" class="active">🚀 ASTEROIDS</a>
+            <a href="spacecrafts.html">🛸 SPACE CRAFTS</a>
+            <a href="earth.html">🌍 EARTH</a>
+            <a href="sattilites.html">📡 SATELLITES</a>
+            <a href="predicton.html">🎯 PREDICTION</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="page-header">
+            <h1>ASTEROID DATABASE</h1>
+            <p class="subtitle">Real-time tracking of Near-Earth Objects (NEOs) with spectral classification and impact risk assessment</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">32,847</div>
+                <div class="stat-label">Known NEOs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">2,304</div>
+                <div class="stat-label">Potentially Hazardous</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">158</div>
+                <div class="stat-label">New This Month</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">24/7</div>
+                <div class="stat-label">Monitoring</div>
+            </div>
+        </div>
+
+        <div class="filter-bar">
+            <button class="filter-btn active">All Asteroids</button>
+            <button class="filter-btn">C-type (Carbonaceous)</button>
+            <button class="filter-btn">S-type (Silicaceous)</button>
+            <button class="filter-btn">M-type (Metallic)</button>
+            <button class="filter-btn">Potentially Hazardous</button>
+        </div>
+
+        <div class="asteroid-grid">
+            <!-- Asteroid Card 1 -->
+            <div class="asteroid-card">
+                <div class="card-header">
+                    <span class="asteroid-name">2024 AB1</span>
+                    <span class="hazard-badge hazard-high">⚠️ HIGH RISK</span>
+                </div>
+                <div class="asteroid-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Diameter</div>
+                        <div class="detail-value">1.8 <span class="detail-unit">km</span></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Velocity</div>
+                        <div class="detail-value">25.3 <span class="detail-unit">km/s</span></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Distance</div>
+                        <div class="detail-value">7.2M <span class="detail-unit">km</span></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Next Approach</div>
+                        <div class="detail-value">2026-03-15</div>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <span class="composition-tag">S-type (Silicaceous)</span>
+                </div>
+                <button class="view-details">View Trajectory →</button>
+            </div>
+
+            <!-- Asteroid Card 2 -->
+            <div class="asteroid-card">
+                <div class="card-header">
+                    <span class="asteroid-name">2024 XC2</span>
+                    <span class="hazard-badge hazard-medium">⚠️ MEDIUM RISK</span>
+                </div>
+                <div class="asteroid-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Diameter</div>
+                        <div class="detail-value">0.9 <span class="detail-unit">km</span></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Velocity</div>
+                        <div class="detail-value">18.7 <span class="detail-unit">km/s</span></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Distance</div>
+                        <div class="detail-value">12.5M <span class="detail-unit">km</span></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Next Approach</div>
+                        <div class="detail-value">2026-07-22</div>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <span class="composition-tag">C-type (Carbonaceous)</span>
+                </div>
+                <button class="view-details">View Trajectory →</button>
+            </div>
+
+            <!-- Asteroid Card 3 -->
+            <div class="asteroid-card">
+                <div class="card-header">
+                    <span class="asteroid-name">2024 ZT3</span>
+                    <span class="hazard-badge hazard-low">✅ LOW RISK</span>
+                </div>
+                <div class="asteroid-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Diameter</div>
+                        <div class="detail-value">0.3 <span class="detail-unit">km</span></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Velocity</div>
+                        <div class="detail-value">12.1 <span class="detail-unit">km/s</span></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Distance</div>
+                        <div class="detail-value">28.3M <span class="detail-unit">km</span></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Next Approach</div>
+                        <div class="detail-value">2026-11-08</div>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <span class="composition-tag">M-type (Metallic)</span>
+                </div>
+                <button class="view-details">View Trajectory →</button>
+            </div>
+
+            <!-- Asteroid Card 4 -->
+            <div class="asteroid-card">
+                <div class="card-header">
+                    <span class="asteroid-name">2024 QP4</span>
+                    <span class="hazard-badge hazard-high">⚠️ HIGH RISK</span>
+                </div>
+                <div class="asteroid-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Diameter</div>
+                        <div class="detail-value">2.4 <span class="detail-unit">km</span></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Velocity</div>
+                        <div class="detail-value">31.2 <span class="detail-unit">km/s</span></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Distance</div>
+                        <div class="detail-value">5.1M <span class="detail-unit">km</span></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Next Approach</div>
+                        <div class="detail-value">2026-05-30</div>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <span class="composition-tag">S-type (Silicaceous)</span>
+                </div>
+                <button class="view-details">View Trajectory →</button>
+            </div>
+
+            <!-- Asteroid Card 5 -->
+            <div class="asteroid-card">
+                <div class="card-header">
+                    <span class="asteroid-name">2024 MH1</span>
+                    <span class="hazard-badge hazard-medium">⚠️ MEDIUM RISK</span>
+                </div>
+                <div class="asteroid-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Diameter</div>
+                        <div class="detail-value">1.2 <span class="detail-unit">km</span></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Velocity</div>
+                        <div class="detail-value">22.8 <span class="detail-unit">km/s</span></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Distance</div>
+                        <div class="detail-value">9.8M <span class="detail-unit">km</span></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Next Approach</div>
+                        <div class="detail-value">2026-09-17</div>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <span class="composition-tag">C-type (Carbonaceous)</span>
+                </div>
+                <button class="view-details">View Trajectory →</button>
+            </div>
+
+            <!-- Asteroid Card 6 -->
+            <div class="asteroid-card">
+                <div class="card-header">
+                    <span class="asteroid-name">2024 KL2</span>
+                    <span class="hazard-badge hazard-low">✅ LOW RISK</span>
+                </div>
+                <div class="asteroid-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Diameter</div>
+                        <div class="detail-value">0.5 <span class="detail-unit">km</span></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Velocity</div>
+                        <div class="detail-value">15.4 <span class="detail-unit">km/s</span></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Distance</div>
+                        <div class="detail-value">19.2M <span class="detail-unit">km</span></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Next Approach</div>
+                        <div class="detail-value">2026-12-03</div>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <span class="composition-tag">M-type (Metallic)</span>
+                </div>
+                <button class="view-details">View Trajectory →</button>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
