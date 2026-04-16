@@ -1715,6 +1715,22 @@
             await makePrediction('/predict/full', data);
         }
 
+        const DEFAULT_API_BASE_URL = 'https://mahesh1017-aegis-earth-backend.hf.space';
+        window.API_BASE_URL = window.API_BASE_URL || DEFAULT_API_BASE_URL;
+
+        function loadApiConfig() {
+            if (!window.location.protocol.startsWith('http')) {
+                return;
+            }
+            const script = document.createElement('script');
+            script.src = '/api-config.js';
+            script.onload = () => console.log('Loaded API config:', window.API_BASE_URL);
+            script.onerror = () => console.warn('API config not available, using fallback', window.API_BASE_URL);
+            document.head.appendChild(script);
+        }
+
+        loadApiConfig();
+
         async function makePrediction(endpoint, data) {
             document.getElementById('results').style.display = 'none';
             document.getElementById('error').style.display = 'none';
@@ -1723,7 +1739,7 @@
             resetVisualization();
 
             try {
-                const response = await fetch(`http://localhost:8000${endpoint}`, {
+                const response = await fetch(`${window.API_BASE_URL}${endpoint}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1780,7 +1796,7 @@
                 document.getElementById('loading').style.display = 'none';
                 console.error('Error:', error);
                 document.getElementById('error-message').textContent =
-                    error.message || 'Failed to get prediction. Ensure the backend is running on port 8000.';
+                    error.message || 'Failed to get prediction. Ensure the backend is reachable.';
                 document.getElementById('error').style.display = 'block';
             }
         }
@@ -1837,7 +1853,7 @@
         // Check backend health
         async function checkBackend() {
             try {
-                const response = await fetch('http://localhost:8000/health');
+                const response = await fetch(`${window.API_BASE_URL}/health`);
                 if (response.ok) {
                     const data = await response.json();
                     console.log('Backend connected:', data);
