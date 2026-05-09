@@ -17,9 +17,6 @@ Python, FastAPI, scikit-learn, XGBoost, Three.js, NASA API
 - Improved prediction stability using ensemble learning  
 - Real-time inference with low latency  
 
-## 📸 Demo
-(Add screenshots here)
-
 ## ⚙️ How to Run
 ```bash
 git clone https://github.com/Mahesh-1017/Aegis-Earth
